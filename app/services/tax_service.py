@@ -18,7 +18,7 @@ def calculate_tax(salary, deductions):
     total_tax_old = base_tax_old * 1.04
 
     # New regime
-    taxable_new = salary - capped["standard"]
+    taxable_new = salary - capped["standard"] + 25000
     base_tax_new = slab_tax_new(taxable_new)
     total_tax_new = base_tax_new * 1.04
 
@@ -50,7 +50,7 @@ def calculate_tax(salary, deductions):
             "taxable_income": taxable_new,
             "base_tax": base_tax_new,
             "total_tax": total_tax_new,
-            "deductions": capped["standard"],
+            "deductions": capped["standard"] + 25000,
         },
         "inputs_used": [k for k, v in deductions.items() if v > 0],
         "missing_inputs": [k for k in limits if deductions.get(k, 0) == 0],
