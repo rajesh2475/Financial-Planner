@@ -1,0 +1,167 @@
+{% if request.path == '/user/tax' %}
+  {% extends "base.html" %}
+  {% block title %}Tax Planner & Comparison{% endblock %}
+{% endif %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-10">
+      <h2 class="text-center mb-4">Tax Planner & Comparison</h2>
+
+      <!-- Tax Form -->
+      <form method="post">
+        <div class="form-row">
+            <div class="form-group col-md-6">
+            <label for="salary">Annual Salary (₹)</label>
+            <input type="number" class="form-control" id="salary" name="salary" value="{{ form.salary or 0 }}" required>
+            </div>
+            <div class="form-group col-md-6">
+            <label for="hra">HRA Claimed (₹)</label>
+            <input type="number" class="form-control" id="hra" name="hra" value="{{ form.hra or 0 }}">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group col-md-6">
+            <label for="sec80c">Section 80C (₹)</label>
+            <input type="number" class="form-control" id="sec80c" name="sec80c" value="{{ form.sec80c or 0 }}" max="150000">
+            </div>
+            <div class="form-group col-md-6">
+            <label for="nps">NPS 80CCD(1B) (₹)</label>
+            <input type="number" class="form-control" id="nps" name="nps" value="{{ form.nps or 0 }}" max="50000">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group col-md-6">
+            <label for="sec80d">Section 80D (₹)</label>
+            <input type="number" class="form-control" id="sec80d" name="sec80d" value="{{ form.sec80d or 0 }}" max="75000">
+            </div>
+            <div class="form-group col-md-6">
+            <label for="home_loan">Home Loan Interest (Section 24) (₹)</label>
+            <input type="number" class="form-control" id="home_loan" name="home_loan" value="{{ form.home_loan or 0 }}" max="200000">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group col-md-6">
+            <label for="other">Other Deductions (₹)</label>
+            <input type="number" class="form-control" id="other" name="other" value="{{ form.other or 0 }}">
+            </div>
+            <div class="form-group col-md-6">
+            <label for="standard">Standard Deduction (₹)</label>
+            <input type="number" class="form-control" id="standard" name="standard" value="{{ form.standard or 50000 }}" max="50000">
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-primary btn-lg">Compare Tax Regimes</button>
+        </div>
+        </form>
+
+
+      {% if result %}
+      <!-- Summary -->
+      <div class="alert alert-info text-center mt-5">
+        <p><strong>Gross Salary:</strong> ₹{{ result.salary | round(0) }}
+          <span class="text-info" data-toggle="tooltip" title="Your total annual income before deductions.">ℹ️</span>
+        </p>
+        <p><strong>Better Option:</strong> {{ result.better }}
+          <span class="text-info" data-toggle="tooltip" title="Chosen based on which regime gives lower total tax.">ℹ️</span>
+        </p>
+        <p><strong>Estimated Savings:</strong> ₹{{ result.savings | round(0) }}
+          <span class="text-info" data-toggle="tooltip" title="Difference between Old and New regime total tax.">ℹ️</span>
+        </p>
+      </div>
+
+      <!-- Regime Comparison -->
+      <div class="row">
+        <!-- Old Regime -->
+        <div class="col-md-6 mb-4">
+          <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">Old Regime</div>
+            <div class="card-body">
+              <p><strong>Taxable Income:</strong> ₹{{ result.old.taxable_income | round(0) }}
+                <span class="text-info" data-toggle="tooltip" title="Gross Salary minus all deductions (80C, NPS, 80D, HRA, Home Loan, etc.).">ℹ️</span>
+              </p>
+              <p><strong>Total Deductions:</strong> ₹{{ result.old.deductions | round(0) }}
+                <span class="text-info" data-toggle="tooltip" title="Sum of all claimed deductions under Old Regime.">ℹ️</span>
+              </p>
+              <p><strong>Base Tax:</strong> ₹{{ result.old.base_tax | round(0) }}
+                <span class="text-info" data-toggle="tooltip" title="Calculated using Old Regime slab rates on taxable income.">ℹ️</span>
+              </p>
+              <p><strong>Total Tax (incl. cess):</strong> ₹{{ result.old.total_tax | round(0) }}
+                <span class="text-info" data-toggle="tooltip" title="Base tax plus 4% health and education cess.">ℹ️</span>
+              </p>
+
+              <h5 class="mt-3">Suggestions</h5>
+              {% if result.old.suggestions %}
+                <ul class="list-group list-group-flush">
+                  {% for s in result.old.suggestions %}
+                    <li class="list-group-item"><em>{{ s }}</em></li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                <p class="text-success">All deduction limits fully utilized.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- New Regime -->
+        <div class="col-md-6 mb-4">
+          <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">New Regime</div>
+            <div class="card-body">
+              <p><strong>Taxable Income:</strong> ₹{{ result.new.taxable_income | round(0) }}
+                <span class="text-info" data-toggle="tooltip" title="Gross Salary minus standard deduction (₹50,000).">ℹ️</span>
+              </p>
+              <p><strong>Deductions:</strong> ₹{{ result.new.deductions | round(0) }}
+                <span class="text-info" data-toggle="tooltip" title="Only standard deduction is allowed in New Regime.">ℹ️</span>
+              </p>
+              <p><strong>Base Tax:</strong> ₹{{ result.new.base_tax | round(0) }}
+                <span class="text-info" data-toggle="tooltip" title="Calculated using New Regime slab rates on taxable income.">ℹ️</span>
+              </p>
+              <p><strong>Total Tax (incl. cess):</strong> ₹{{ result.new.total_tax | round(0) }}
+                <span class="text-info" data-toggle="tooltip" title="Base tax plus 4% health and education cess.">ℹ️</span>
+              </p>
+
+              <h5 class="mt-3">Notes</h5>
+              <p class="text-muted"><em>New regime offers lower slab rates but limited deductions. Old regime may be better if you invest strategically.</em></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calculation Summary -->
+      <div class="card mt-4">
+        <div class="card-header">Calculation Summary</div>
+        <div class="card-body">
+          <h5>Old Regime</h5>
+          <p>You have invested in: {{ result.old.invested_items | join(", ") }}</p>
+          {% if result.old.suggestions %}
+            <p>If you invest in the following, you can save more:</p>
+            <ul>
+              {% for s in result.old.suggestions %}
+                <li><em>{{ s }}</em></li>
+              {% endfor %}
+            </ul>
+            <p><strong>Additional savings possible:</strong> ₹{{ result.old.additional_savings | default(0) | round(0) }}</p>
+          {% else %}
+            <p class="text-success">All deduction limits fully utilized.</p>
+          {% endif %}
+
+          <hr>
+
+          <h5>New Regime</h5>
+          <p>Deductions are limited, but lower slab rates apply.</p>
+          <p><strong>Total Tax:</strong> ₹{{ result.new.total_tax | default(0) | round(0) }}</p>
+          <p><strong>Estimated savings vs Old:</strong> ₹{{ result.savings | default(0) | round(0) }}</p>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
