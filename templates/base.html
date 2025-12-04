@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>{% block title %}ITR Navigator{% endblock %}</title>
+  <title>{% block title %}Wealth Navigator{% endblock %}</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <!-- <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"> -->
 </head>
 <body>
 
   <!-- Global Navigation Bar -->
   <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #e3f2fd;">
-    <a class="navbar-brand" href="{{ url_for('home') }}">ITR Navigator</a>
+    <a class="navbar-brand" href="{{ url_for('home') }}">Wealth Navigator</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText"
             aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -24,8 +24,8 @@
         <li class="nav-item {% if request.endpoint == 'user.tax_compare' %}active{% endif %}">
           <a class="nav-link" href="{{ url_for('user.tax_compare') }}">Tax Planner</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Reports</a>
+        <li class="nav-item {% if request.endpoint == 'sip.api_stepup' %}active{% endif %}">
+          <a class="nav-link" href="{{ url_for('sip.api_stepup') }}">Incremental SIP</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="#">Pricing</a>
@@ -39,8 +39,8 @@
 
   <!-- Page Header -->
   <header class="bg-dark text-white text-center p-3">
-    <h1>ITR Navigator</h1>
-    <p>Your guide to smart tax planning</p>
+    <h1>Wealth Navigator</h1>
+    <p>Your guide to SIP, savings, and smart tax planning</p>
   </header>
 
   <!-- Page Content -->
