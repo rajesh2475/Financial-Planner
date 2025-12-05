@@ -30,9 +30,12 @@
         <li class="nav-item {% if request.endpoint == 'home.loan_calculator' %}active{% endif %}">
           <a class="nav-link" href="{{ url_for('home.loan_calculator') }}">Home Loan Calculator</a>
         </li>
+        <li class="nav-item {% if request.endpoint == 'retire.retire_calculator' %}active{% endif %}">
+          <a class="nav-link" href="{{ url_for('retire.retire_calculator') }}">Retirement Calculator</a>
+        </li>
       </ul>
       <span class="navbar-text">
-        Smart tax planning for employees
+        Smart money planning
       </span>
     </div>
   </nav>
