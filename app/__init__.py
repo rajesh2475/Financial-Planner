@@ -4,6 +4,7 @@ from app.routes.user_routes import user_bp
 from app.routes.spi import sip_bp
 from app.routes.home_loan import home_bp
 from app.routes.retire import retire_bp
+from app.routes.tax_full import tax_full_bp
 
 def create_app():
     template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "templates")
@@ -16,6 +17,7 @@ def create_app():
     app.register_blueprint(sip_bp, url_prefix="/sip")
     app.register_blueprint(home_bp, url_prefix="/home")
     app.register_blueprint(retire_bp, url_prefix="/retire")
+    app.register_blueprint(tax_full_bp, url_prefix="/tax")
 
     @app.route("/home")
     def home():

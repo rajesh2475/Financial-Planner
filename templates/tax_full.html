@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Comprehensive Income Tax Calculator{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm mb-4">
+  <div class="card-header fw-semibold">Income & Deduction Inputs</div>
+  <div class="card-body">
+    <form method="POST" action="{{ url_for('tax_full.full_tax_calculator') }}">
+      <table class="table table-bordered">
+        <tr>
+          <th>Total Annual Income
+            <span data-toggle="tooltip" title="Your total gross income before deductions.">
+              <i class="fas fa-info-circle text-muted"></i>
+            </span>
+          </th>
+          <td><input type="number" name="income" value="{{ form.income }}" class="form-control"></td>
+        </tr>
+        <tr>
+          <th>Age
+            <span data-toggle="tooltip" title="Your age determines applicable tax slabs under old regime.">
+              <i class="fas fa-info-circle text-muted"></i>
+            </span>
+          </th>
+          <td><input type="number" name="age" value="{{ form.age }}" class="form-control"></td>
+        </tr>
+
+        <!-- Section 80C -->
+        <tr class="table-secondary"><th colspan="2">Section 80C Deductions</th></tr>
+        {% for label, name, tip in [
+          ('Life Insurance Premium', 'life_insurance', 'Premiums paid for life insurance policies.'),
+          ('ULIP', 'ulip', 'Unit Linked Insurance Plan contributions.'),
+          ('ELSS', 'elss', 'Equity Linked Savings Scheme investments.'),
+          ('Children\'s Tuition Fees', 'tuition_fees', 'Tuition fees paid for children\'s education.'),
+          ('EPF / NPS', 'epf_nps', 'Employee Provident Fund or NPS contributions.'),
+          ('PPF', 'ppf', 'Public Provident Fund deposits.'),
+          ('SSY', 'ssy', 'Sukanya Samriddhi Yojana contributions.'),
+          ('Tax Saving FD', 'tax_saving_fd', 'Fixed deposits with 5-year lock-in.'),
+          ('NSC', 'nsc', 'National Savings Certificate investments.'),
+          ('Principal on Home Loan', 'home_loan_principal', 'Principal repayment on home loan.')
+        ] %}
+        <tr>
+          <th>{{ label }}
+            <span data-toggle="tooltip" title="{{ tip }}">
+              <i class="fas fa-info-circle text-muted"></i>
+            </span>
+          </th>
+          <td><input type="number" name="{{ name }}" value="{{ form[name] }}" class="form-control"></td>
+        </tr>
+        {% endfor %}
+
+        <!-- Other Sections -->
+        <tr class="table-secondary"><th colspan="2">Other Deductions</th></tr>
+        {% for label, name, tip in [
+          ('NPS 80CCD(1B)', 'nps_80ccd_1b', 'Additional NPS contribution under section 80CCD(1B).'),
+          ('HRA 80GG', 'hra_80gg', 'House Rent Allowance deduction for non-salaried individuals.'),
+          ('Education Loan Interest 80E', 'edu_loan_80e', 'Interest paid on education loans.'),
+          ('Home Loan Interest 80EEA', 'home_loan_interest_80eea', 'Interest on home loan for affordable housing.'),
+          ('Health Insurance (Self)', 'health_self', 'Premiums for your own health insurance.'),
+          ('Health Insurance (Parents)', 'health_parents', 'Premiums for parents\' health insurance.'),
+          ('Home Loan Interest 24B', 'home_loan_interest_24b', 'Interest on home loan under section 24B.'),
+          ('EV Loan Interest 80EEB', 'ev_interest_80eeb', 'Interest on electric vehicle loan.'),
+          ('Standard Deduction', 'standard_deduction', 'Flat deduction available to salaried individuals.'),
+          ('LTA Section 10(5)', 'lta_10_5', 'Leave Travel Allowance exemption.'),
+          ('Others', 'others', 'Any other eligible deductions.')
+        ] %}
+        <tr>
+          <th>{{ label }}
+            <span data-toggle="tooltip" title="{{ tip }}">
+              <i class="fas fa-info-circle text-muted"></i>
+            </span>
+          </th>
+          <td><input type="number" name="{{ name }}" value="{{ form[name] }}" class="form-control"></td>
+        </tr>
+        {% endfor %}
+      </table>
+      <button type="submit" class="btn btn-primary">Calculate Tax</button>
+    </form>
+  </div>
+</div>
+
+{% if result %}
+<div class="card shadow-sm mb-4">
+  <div class="card-header fw-semibold">Summary</div>
+  <div class="card-body">
+    <p><strong>Total Deductions:</strong> ₹{{ result.deductions }}</p>
+    <p><strong>Taxable Income (Old Regime):</strong> ₹{{ result.taxable_old }}</p>
+    <p><strong>Taxable Income (New Regime):</strong> ₹{{ result.taxable_new }}</p>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header fw-semibold">Old Regime Tax Breakdown</div>
+  <div class="card-body">
+    <table class="table table-bordered">
+      <thead class="table-light">
+        <tr><th>Slab Range</th><th>Rate</th><th>Slab Value</th><th>Tax</th></tr>
+      </thead>
+      <tbody>
+        {% for row in result.old.slabs %}
+        <tr>
+          <td>{{ row.range }}</td>
+          <td>{{ row.rate * 100 }}%</td>
+          <td>₹{{ row.value }}</td>
+          <td>₹{{ row.tax }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p><strong>Gross Tax:</strong> ₹{{ result.old.gross }}</p>
+    <p><strong>Tax with Cess (4%):</strong> ₹{{ result.old.cess }}</p>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header fw-semibold">New Regime Tax Breakdown</div>
+  <div class="card-body">
+    <table class="table table-bordered">
+      <thead class="table-light">
+        <tr><th>Slab Range</th><th>Rate</th><th>Slab Value</th><th>Tax</th></tr>
+      </thead>
+      <tbody>
+        {% for row in result.new.slabs %}
+        <tr>
+          <td>{{ row.range }}</td>
+          <td>{{ row.rate * 100 }}%</td>
+          <td>₹{{ row.value }}</td>
+          <td>₹{{ row.tax }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p><strong>Gross Tax:</strong> ₹{{ result.new.gross }}</p>
+    <p><strong>Tax with Cess (4%):</strong> ₹{{ result.new.cess }}</p>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

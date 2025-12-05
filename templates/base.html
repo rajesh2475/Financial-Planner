@@ -4,7 +4,12 @@
   <meta charset="UTF-8">
   <title>{% block title %}Wealth Navigator{% endblock %}</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <!-- Optional custom styles -->
   <!-- <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"> -->
+
+  <!-- Font Awesome for info icons -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
 
@@ -18,9 +23,6 @@
 
     <div class="collapse navbar-collapse" id="navbarText">
       <ul class="navbar-nav mr-auto">
-        <!-- <li class="nav-item {% if request.endpoint == 'home' %}active{% endif %}">
-          <a class="nav-link" href="{{ url_for('home') }}">Home</a>
-        </li> -->
         <li class="nav-item {% if request.endpoint == 'user.tax_compare' %}active{% endif %}">
           <a class="nav-link" href="{{ url_for('user.tax_compare') }}">Tax Planner</a>
         </li>
@@ -33,6 +35,8 @@
         <li class="nav-item {% if request.endpoint == 'retire.retire_calculator' %}active{% endif %}">
           <a class="nav-link" href="{{ url_for('retire.retire_calculator') }}">Retirement Calculator</a>
         </li>
+        <li class="nav-item {% if request.endpoint == 'tax_full.full_tax_calculator' %}active{% endif %}">
+          <a class="nav-link" href="{{ url_for('tax_full.full_tax_calculator') }}">Comprehensive Tax</a>
       </ul>
       <span class="navbar-text">
         Smart money planning
