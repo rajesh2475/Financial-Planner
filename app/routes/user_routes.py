@@ -1,14 +1,8 @@
 from flask import Blueprint, request, render_template
 from app.services.tax_service import calculate_tax
+from app.utils.helpers import safe_float
 
 user_bp = Blueprint("user", __name__)
-
-
-def safe_float(value, default=0.0):
-    try:
-        return float(value)
-    except (TypeError, ValueError):
-        return default
 
 
 @user_bp.route("/tax", methods=["GET", "POST"])

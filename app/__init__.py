@@ -1,7 +1,8 @@
 import os
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect, url_for
 from app.routes.user_routes import user_bp
 from app.routes.spi import sip_bp
+from app.routes.home_loan import home_bp
 
 def create_app():
     template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "templates")
@@ -12,11 +13,16 @@ def create_app():
 
     app.register_blueprint(user_bp, url_prefix="/user")
     app.register_blueprint(sip_bp, url_prefix="/sip")
+    app.register_blueprint(home_bp, url_prefix="/home")
 
     @app.route("/home")
     def home():
         form_data = {}
         result = None
         return render_template("home.html", form=form_data, result=result)
-        
+    
+    @app.route("/")
+    def default_page():
+        # Redirect to the SIP step-up route
+        return redirect(url_for("user.tax_compare"))        
     return app

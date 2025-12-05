@@ -1,5 +1,6 @@
 # app.py
 from flask import Flask, request, jsonify, render_template, Blueprint
+from app.utils.helpers import safe_float, safe_int
 sip_bp = Blueprint("sip", __name__)
 
 
@@ -98,18 +99,18 @@ def api_stepup():
         return render_template("incremental_sip.html", form=form_data, result=None)
 
     if request.method == "POST":
+        # Collect form inputs (from HTML form submission)
         try:
-            # Collect form inputs (from HTML form submission)
-            planned_monthly_investment = float(request.form.get("plannedMonthlyInvestment", 0))
+            planned_monthly_investment = safe_float(request.form.get("plannedMonthlyInvestment", 0))
             years_of_investment = int(request.form.get("yearsOfInvestment", 0))
-            annual_return = float(request.form.get("annualReturn", 0)) / 100
-            holding_years = int(request.form.get("holdingYears", 0))
+            annual_return = safe_float(request.form.get("annualReturn", 0)) / 100
+            holding_years = safe_int(request.form.get("holdingYears", 0))
 
             mode = request.form.get("mode", "percent")
             if mode not in ("percent", "value"):
                 return jsonify({"error": "mode must be 'percent' or 'value'"}), 400
 
-            increment_value = float(request.form.get("incrementValue", 0)) / 100
+            increment_value = safe_float(request.form.get("incrementValue", 0)) / 100
 
             # Validations
             if planned_monthly_investment < 0 or years_of_investment < 0 or annual_return < 0:
@@ -139,8 +140,9 @@ def api_stepup():
             }
 
             return render_template("incremental_sip.html", form=form_data, result=result)
-
         except (TypeError, ValueError):
-            return jsonify({"error": "Invalid input types"}), 400
+            return jsonify({"error": "Invalid input"}), 400
+
+      
 
 
