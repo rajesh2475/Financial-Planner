@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Credit Cards Data 2{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold">Credit Cards Data 2</div>
+    <div class="card-body">
+      <p><strong>Source Excel File:</strong> Credit cards data 2.xlsx</p>
+      <p>This calculator is automatically generated from the Excel workbook. Enter your inputs below to calculate results.</p>
+      
+      <form id="calcForm" method="POST">
+        <fieldset>
+          <legend class="mb-3">Input Values</legend>
+
+        <div class="form-group mb-3">
+          <label for="input_0" class="form-label">Reward Rate</label>
+          <input type="number" class="form-control" id="input_0" name="input_0" placeholder="Enter reward rate">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_1" class="form-label">Annual Percentage Rate</label>
+          <input type="number" class="form-control" id="input_1" name="input_1" placeholder="Enter annual percentage rate">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_2" class="form-label">Key Advantages</label>
+          <input type="number" class="form-control" id="input_2" name="input_2" placeholder="Enter key advantages">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_3" class="form-label">Key Disadvantages</label>
+          <input type="number" class="form-control" id="input_3" name="input_3" placeholder="Enter key disadvantages">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_4" class="form-label">5% online cashback, 1% offline cashback, 1% fuel surcharge waiver, EMI benefit, No merchant restrictions</label>
+          <input type="number" class="form-control" id="input_4" name="input_4" placeholder="Enter 5% online cashback, 1% offline cashback, 1% fuel surcharge waiver, emi benefit, no merchant restrictions">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_5" class="form-label">1-10% reward rate, Premium customer service, Travel accident insurance</label>
+          <input type="number" class="form-control" id="input_5" name="input_5" placeholder="Enter 1-10% reward rate, premium customer service, travel accident insurance">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_6" class="form-label">3.3-33% reward rate, Premium metal card, Concierge service</label>
+          <input type="number" class="form-control" id="input_6" name="input_6" placeholder="Enter 3.3-33% reward rate, premium metal card, concierge service">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_7" class="form-label">Very high annual fee (₹10,000), Complex reward system, Premium only</label>
+          <input type="number" class="form-control" id="input_7" name="input_7" placeholder="Enter very high annual fee (₹10,000), complex reward system, premium only">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_8" class="form-label">Low reward rate (0.4%), Limited benefits, APR 52.86%</label>
+          <input type="number" class="form-control" id="input_8" name="input_8" placeholder="Enter low reward rate (0.4%), limited benefits, apr 52.86%">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_9" class="form-label">Low reward rate (0.2-1.6%), Limited premium benefits, Free tier</label>
+          <input type="number" class="form-control" id="input_9" name="input_9" placeholder="Enter low reward rate (0.2-1.6%), limited premium benefits, free tier">
+        </div>
+        </fieldset>
+        
+        <button type="submit" class="btn btn-primary">Calculate</button>
+        <button type="reset" class="btn btn-secondary">Clear</button>
+        <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary">Back to Home</a>
+      </form>
+    </div>
+  </div>
+
+  {% if result %}
+  <div class="card shadow-sm">
+    <div class="card-header fw-semibold">Results</div>
+    <div class="card-body">
+      <table class="table table-bordered">
+        <tbody>
+
+        <tr>
+          <th>5% online cashback, 1% offline cashback, 1% fuel surcharge waiver, EMI benefit, No merchant restrictions</th>
+          <td id="result_0">-</td>
+        </tr>
+        <tr>
+          <th>1-10% reward rate, Premium customer service, Travel accident insurance</th>
+          <td id="result_1">-</td>
+        </tr>
+        <tr>
+          <th>3.3-33% reward rate, Premium metal card, Concierge service</th>
+          <td id="result_2">-</td>
+        </tr>
+        <tr>
+          <th>Very high annual fee (₹10,000), Complex reward system, Premium only</th>
+          <td id="result_3">-</td>
+        </tr>
+        <tr>
+          <th>Low reward rate (0.2-1.6%), Limited premium benefits, Free tier</th>
+          <td id="result_4">-</td>
+        </tr>
+        <tr>
+          <th>Free tier limitations, Limited premium features, APR 42%</th>
+          <td id="result_5">-</td>
+        </tr>
+        <tr>
+          <th>High reward rate (3.3-33%), Metal card, Premium benefits</th>
+          <td id="result_6">-</td>
+        </tr>
+        <tr>
+          <th>Very high annual fee (₹12,500), Complex reward structure, Premium only</th>
+          <td id="result_7">-</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if error %}
+  <div class="alert alert-danger">{{ error }}</div>
+  {% endif %}
+</div>
+
+<script>
+  document.getElementById("calcForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch("{{ url_for('calculators.credit_cards_data_2_api') }}", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(result => {
+      if (result.success) {
+        console.log("Calculation result:", result);
+        alert("Calculation submitted. Check console for details.");
+      } else {
+        alert("Error: " + (result.error || "Calculation failed"));
+      }
+    })
+    .catch(err => {
+      console.error("API error:", err);
+      alert("Failed to calculate: " + err.message);
+    });
+  });
+</script>
+{% endblock %}

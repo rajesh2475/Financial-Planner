@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Incremental Investment Calculator{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold">Incremental Investment Calculator</div>
+    <div class="card-body">
+      <p><strong>Source Excel File:</strong> Incremental Investment Calculator.xlsx</p>
+      <p>This calculator is automatically generated from the Excel workbook. Enter your inputs below to calculate results.</p>
+      
+      <form id="calcForm" method="POST">
+        <fieldset>
+          <legend class="mb-3">Input Values</legend>
+
+        <div class="form-group mb-3">
+          <label for="input_0" class="form-label">INCREMENTAL SIP INVESTMENT CALCULATOR WITH "X%"</label>
+          <input type="number" class="form-control" id="input_0" name="input_0" placeholder="Enter incremental sip investment calculator with "x%"">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_1" class="form-label">INCREMENTAL SIP INVESTMENT CALCULATOR WITH "X" VALUE</label>
+          <input type="number" class="form-control" id="input_1" name="input_1" placeholder="Enter incremental sip investment calculator with "x" value">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_2" class="form-label">PLANNED MONTHLY INVESTMENT</label>
+          <input type="number" class="form-control" id="input_2" name="input_2" placeholder="Enter planned monthly investment">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_3" class="form-label">NUMBER OF YEARS OF INVESTMENT</label>
+          <input type="number" class="form-control" id="input_3" name="input_3" placeholder="Enter number of years of investment">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_4" class="form-label">RETURN EXPECTED</label>
+          <input type="number" class="form-control" id="input_4" name="input_4" placeholder="Enter return expected">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_5" class="form-label">EXPECTED ANNUAL INCREMENTAL RATE FOR INVESTMENT</label>
+          <input type="number" class="form-control" id="input_5" name="input_5" placeholder="Enter expected annual incremental rate for investment">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_6" class="form-label">MONTHLY INVESTMENT</label>
+          <input type="number" class="form-control" id="input_6" name="input_6" placeholder="Enter monthly investment">
+        </div>
+        </fieldset>
+        
+        <button type="submit" class="btn btn-primary">Calculate</button>
+        <button type="reset" class="btn btn-secondary">Clear</button>
+        <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary">Back to Home</a>
+      </form>
+    </div>
+  </div>
+
+  {% if result %}
+  <div class="card shadow-sm">
+    <div class="card-header fw-semibold">Results</div>
+    <div class="card-body">
+      <table class="table table-bordered">
+        <tbody>
+
+        <tr>
+          <th>INCREMENTAL SIP INVESTMENT CALCULATOR WITH "X%"</th>
+          <td id="result_0">-</td>
+        </tr>
+        <tr>
+          <th>INCREMENTAL SIP INVESTMENT CALCULATOR WITH "X" VALUE</th>
+          <td id="result_1">-</td>
+        </tr>
+        <tr>
+          <th>VALUE AT THE END OF THE YEAR</th>
+          <td id="result_2">-</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if error %}
+  <div class="alert alert-danger">{{ error }}</div>
+  {% endif %}
+</div>
+
+<script>
+  document.getElementById("calcForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch("{{ url_for('calculators.incremental_investment_calculator_api') }}", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(result => {
+      if (result.success) {
+        console.log("Calculation result:", result);
+        alert("Calculation submitted. Check console for details.");
+      } else {
+        alert("Error: " + (result.error || "Calculation failed"));
+      }
+    })
+    .catch(err => {
+      console.error("API error:", err);
+      alert("Failed to calculate: " + err.message);
+    });
+  });
+</script>
+{% endblock %}

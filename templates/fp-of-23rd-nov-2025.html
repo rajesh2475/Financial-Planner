@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Fp Of 23Rd Nov 2025{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold">Fp Of 23Rd Nov 2025</div>
+    <div class="card-body">
+      <p><strong>Source Excel File:</strong> FP of 23rd Nov 2025.xlsx</p>
+      <p>This calculator is automatically generated from the Excel workbook. Enter your inputs below to calculate results.</p>
+      
+      <form id="calcForm" method="POST">
+        <fieldset>
+          <legend class="mb-3">Input Values</legend>
+
+        <div class="form-group mb-3">
+          <label for="input_0" class="form-label">VALUE OF MUTUAL FUNDS INVESTMENT</label>
+          <input type="number" class="form-control" id="input_0" name="input_0" placeholder="Enter value of mutual funds investment">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_1" class="form-label">SIP TOP-UP RATE</label>
+          <input type="number" class="form-control" id="input_1" name="input_1" placeholder="Enter sip top-up rate">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_2" class="form-label">EXPECTED RATE</label>
+          <input type="number" class="form-control" id="input_2" name="input_2" placeholder="Enter expected rate">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_3" class="form-label">RETIREMENT PLANNING</label>
+          <input type="number" class="form-control" id="input_3" name="input_3" placeholder="Enter retirement planning">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_4" class="form-label">AGE</label>
+          <input type="number" class="form-control" id="input_4" name="input_4" placeholder="Enter age">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_5" class="form-label">CURRENT AGE</label>
+          <input type="number" class="form-control" id="input_5" name="input_5" placeholder="Enter current age">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_6" class="form-label">SALARY</label>
+          <input type="number" class="form-control" id="input_6" name="input_6" placeholder="Enter salary">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_7" class="form-label">PLANNING TO RETIRE @ AGE</label>
+          <input type="number" class="form-control" id="input_7" name="input_7" placeholder="Enter planning to retire @ age">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_8" class="form-label">SPOUSE'S INCOME</label>
+          <input type="number" class="form-control" id="input_8" name="input_8" placeholder="Enter spouse's income">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_9" class="form-label">CURRENT  HOUSE HOLD EXPENSES</label>
+          <input type="number" class="form-control" id="input_9" name="input_9" placeholder="Enter current  house hold expenses">
+        </div>
+        </fieldset>
+        
+        <button type="submit" class="btn btn-primary">Calculate</button>
+        <button type="reset" class="btn btn-secondary">Clear</button>
+        <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary">Back to Home</a>
+      </form>
+    </div>
+  </div>
+
+  {% if result %}
+  <div class="card shadow-sm">
+    <div class="card-header fw-semibold">Results</div>
+    <div class="card-body">
+      <table class="table table-bordered">
+        <tbody>
+
+        <tr>
+          <th>SIP TOP-UP RATE</th>
+          <td id="result_0">-</td>
+        </tr>
+        <tr>
+          <th>SIP</th>
+          <td id="result_1">-</td>
+        </tr>
+        <tr>
+          <th>TOTAL EXPENSE 18000-8500 RENT</th>
+          <td id="result_2">-</td>
+        </tr>
+        <tr>
+          <th>PREMIUM</th>
+          <td id="result_3">-</td>
+        </tr>
+        <tr>
+          <th>CORPUS REQUIRED TO FUND CASHFLOWS</th>
+          <td id="result_4">-</td>
+        </tr>
+        <tr>
+          <th>CORPUS REQUIRED TO RETIRE</th>
+          <td id="result_5">-</td>
+        </tr>
+        <tr>
+          <th>MF SIP</th>
+          <td id="result_6">-</td>
+        </tr>
+        <tr>
+          <th>SIP IN NPS</th>
+          <td id="result_7">-</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if error %}
+  <div class="alert alert-danger">{{ error }}</div>
+  {% endif %}
+</div>
+
+<script>
+  document.getElementById("calcForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch("{{ url_for('calculators.fp_of_23rd_nov_2025_api') }}", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(result => {
+      if (result.success) {
+        console.log("Calculation result:", result);
+        alert("Calculation submitted. Check console for details.");
+      } else {
+        alert("Error: " + (result.error || "Calculation failed"));
+      }
+    })
+    .catch(err => {
+      console.error("API error:", err);
+      alert("Failed to calculate: " + err.message);
+    });
+  });
+</script>
+{% endblock %}

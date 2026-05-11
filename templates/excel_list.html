@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Excel-backed Calculator Library{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm mb-4">
+  <div class="card-header fw-semibold">Excel-backed Calculator Library</div>
+  <div class="card-body">
+    <p>This page lists every calculator file present in <code>app/excels</code>. Each file has its own placeholder page. Actual calculator logic can be implemented later based on the workbook contents.</p>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Excel File</th>
+          <th>Page</th>
+        </tr>
+            <th>API</th>
+      </thead>
+      <tbody>
+        {% for file in excel_files %}
+        <tr>
+          <td>{{ file.name }}</td>
+          <td><a href="{{ url_for('excel.excel_detail', slug=file.slug) }}">Open page</a></td>
+        </tr>
+            <td><a href="{{ file.api_url }}">API</a></td>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

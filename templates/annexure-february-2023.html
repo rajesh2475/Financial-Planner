@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Annexure February 2023{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold">Annexure February 2023</div>
+    <div class="card-body">
+      <p><strong>Source Excel File:</strong> Annexure_February_2023.xls</p>
+      <p>This calculator is automatically generated from the Excel workbook. Enter your inputs below to calculate results.</p>
+      
+      <form id="calcForm" method="POST">
+        <fieldset>
+          <legend class="mb-3">Input Values</legend>
+
+        </fieldset>
+        
+        <button type="submit" class="btn btn-primary">Calculate</button>
+        <button type="reset" class="btn btn-secondary">Clear</button>
+        <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary">Back to Home</a>
+      </form>
+    </div>
+  </div>
+
+  {% if result %}
+  <div class="card shadow-sm">
+    <div class="card-header fw-semibold">Results</div>
+    <div class="card-body">
+      <table class="table table-bordered">
+        <tbody>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if error %}
+  <div class="alert alert-danger">{{ error }}</div>
+  {% endif %}
+</div>
+
+<script>
+  document.getElementById("calcForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch("{{ url_for('calculators.annexure_february_2023_api') }}", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(result => {
+      if (result.success) {
+        console.log("Calculation result:", result);
+        alert("Calculation submitted. Check console for details.");
+      } else {
+        alert("Error: " + (result.error || "Calculation failed"));
+      }
+    })
+    .catch(err => {
+      console.error("API error:", err);
+      alert("Failed to calculate: " + err.message);
+    });
+  });
+</script>
+{% endblock %}

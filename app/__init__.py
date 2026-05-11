@@ -5,6 +5,8 @@ from app.routes.spi import sip_bp
 from app.routes.home_loan import home_bp
 from app.routes.retire import retire_bp
 from app.routes.tax_full import tax_full_bp
+from app.routes.excel_pages import excel_bp
+from app.routes.generated_calculators import calc_bp
 
 def create_app():
     template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "templates")
@@ -18,6 +20,8 @@ def create_app():
     app.register_blueprint(home_bp, url_prefix="/home")
     app.register_blueprint(retire_bp, url_prefix="/retire")
     app.register_blueprint(tax_full_bp, url_prefix="/tax")
+    app.register_blueprint(excel_bp, url_prefix="/excel")
+    app.register_blueprint(calc_bp, url_prefix="/calc")
 
     @app.route("/home")
     def home():
@@ -27,6 +31,6 @@ def create_app():
     
     @app.route("/")
     def default_page():
-        # Redirect to the SIP step-up route
-        return redirect(url_for("user.tax_compare"))        
+        # Render the app home dashboard listing supported calculators.
+        return render_template("home.html")
     return app

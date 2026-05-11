@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Health Insurance Edited Aa  (1){% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold">Health Insurance Edited Aa  (1)</div>
+    <div class="card-body">
+      <p><strong>Source Excel File:</strong> Health Insurance edited aa  (1).xlsx</p>
+      <p>This calculator is automatically generated from the Excel workbook. Enter your inputs below to calculate results.</p>
+      
+      <form id="calcForm" method="POST">
+        <fieldset>
+          <legend class="mb-3">Input Values</legend>
+
+        <div class="form-group mb-3">
+          <label for="input_0" class="form-label">Future Premium Withdrawal calculator</label>
+          <input type="number" class="form-control" id="input_0" name="input_0" placeholder="Enter future premium withdrawal calculator">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_1" class="form-label">Age</label>
+          <input type="number" class="form-control" id="input_1" name="input_1" placeholder="Enter age">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_2" class="form-label">Annual Premium</label>
+          <input type="number" class="form-control" id="input_2" name="input_2" placeholder="Enter annual premium">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_3" class="form-label">Return</label>
+          <input type="number" class="form-control" id="input_3" name="input_3" placeholder="Enter return">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_4" class="form-label">Premium Growth</label>
+          <input type="number" class="form-control" id="input_4" name="input_4" placeholder="Enter premium growth">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_5" class="form-label">No of times of Investment</label>
+          <input type="number" class="form-control" id="input_5" name="input_5" placeholder="Enter no of times of investment">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_6" class="form-label">Current Premium</label>
+          <input type="number" class="form-control" id="input_6" name="input_6" placeholder="Enter current premium">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_7" class="form-label">Growth in Premium Rate</label>
+          <input type="number" class="form-control" id="input_7" name="input_7" placeholder="Enter growth in premium rate">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_8" class="form-label">Monthly Investment</label>
+          <input type="number" class="form-control" id="input_8" name="input_8" placeholder="Enter monthly investment">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_9" class="form-label">Investment for yrs</label>
+          <input type="number" class="form-control" id="input_9" name="input_9" placeholder="Enter investment for yrs">
+        </div>
+        </fieldset>
+        
+        <button type="submit" class="btn btn-primary">Calculate</button>
+        <button type="reset" class="btn btn-secondary">Clear</button>
+        <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary">Back to Home</a>
+      </form>
+    </div>
+  </div>
+
+  {% if result %}
+  <div class="card shadow-sm">
+    <div class="card-header fw-semibold">Results</div>
+    <div class="card-body">
+      <table class="table table-bordered">
+        <tbody>
+
+        <tr>
+          <th>Future Premium Withdrawal calculator</th>
+          <td id="result_0">-</td>
+        </tr>
+        <tr>
+          <th>Annual Premium</th>
+          <td id="result_1">-</td>
+        </tr>
+        <tr>
+          <th>Premium Growth</th>
+          <td id="result_2">-</td>
+        </tr>
+        <tr>
+          <th>Current Premium</th>
+          <td id="result_3">-</td>
+        </tr>
+        <tr>
+          <th>Growth in Premium Rate</th>
+          <td id="result_4">-</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if error %}
+  <div class="alert alert-danger">{{ error }}</div>
+  {% endif %}
+</div>
+
+<script>
+  document.getElementById("calcForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch("{{ url_for('calculators.health_insurance_edited_aa_1_api') }}", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(result => {
+      if (result.success) {
+        console.log("Calculation result:", result);
+        alert("Calculation submitted. Check console for details.");
+      } else {
+        alert("Error: " + (result.error || "Calculation failed"));
+      }
+    })
+    .catch(err => {
+      console.error("API error:", err);
+      alert("Failed to calculate: " + err.message);
+    });
+  });
+</script>
+{% endblock %}

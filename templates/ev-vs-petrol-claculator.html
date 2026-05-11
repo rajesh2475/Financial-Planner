@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Ev Vs Petrol Claculator{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold">Ev Vs Petrol Claculator</div>
+    <div class="card-body">
+      <p><strong>Source Excel File:</strong> Ev vs Petrol Claculator.xlsx</p>
+      <p>This calculator is automatically generated from the Excel workbook. Enter your inputs below to calculate results.</p>
+      
+      <form id="calcForm" method="POST">
+        <fieldset>
+          <legend class="mb-3">Input Values</legend>
+
+        <div class="form-group mb-3">
+          <label for="input_0" class="form-label">Milage in KMs Per  (Unit/Liter) / range</label>
+          <input type="number" class="form-control" id="input_0" name="input_0" placeholder="Enter milage in kms per  (unit/liter) / range">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_1" class="form-label">INVESTMENT VALUE OF DIFFERENCE AMOUNT</label>
+          <input type="number" class="form-control" id="input_1" name="input_1" placeholder="Enter investment value of difference amount">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_2" class="form-label">BATTERY COST INVESTMENT</label>
+          <input type="number" class="form-control" id="input_2" name="input_2" placeholder="Enter battery cost investment">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_3" class="form-label">Exces Amount Invested</label>
+          <input type="number" class="form-control" id="input_3" name="input_3" placeholder="Enter exces amount invested">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_4" class="form-label">Post Tax Returns expected</label>
+          <input type="number" class="form-control" id="input_4" name="input_4" placeholder="Enter post tax returns expected">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_5" class="form-label">Profit on Investment</label>
+          <input type="number" class="form-control" id="input_5" name="input_5" placeholder="Enter profit on investment">
+        </div>
+        </fieldset>
+        
+        <button type="submit" class="btn btn-primary">Calculate</button>
+        <button type="reset" class="btn btn-secondary">Clear</button>
+        <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary">Back to Home</a>
+      </form>
+    </div>
+  </div>
+
+  {% if result %}
+  <div class="card shadow-sm">
+    <div class="card-header fw-semibold">Results</div>
+    <div class="card-body">
+      <table class="table table-bordered">
+        <tbody>
+
+        <tr>
+          <th>Life Tax</th>
+          <td id="result_0">-</td>
+        </tr>
+        <tr>
+          <th>Total Fuel /Energy Cost</th>
+          <td id="result_1">-</td>
+        </tr>
+        <tr>
+          <th>Total Cost for the vehicle</th>
+          <td id="result_2">-</td>
+        </tr>
+        <tr>
+          <th>Total Costing for Owning the Car</th>
+          <td id="result_3">-</td>
+        </tr>
+        <tr>
+          <th>Post Tax Returns expected</th>
+          <td id="result_4">-</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if error %}
+  <div class="alert alert-danger">{{ error }}</div>
+  {% endif %}
+</div>
+
+<script>
+  document.getElementById("calcForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch("{{ url_for('calculators.ev_vs_petrol_claculator_api') }}", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(result => {
+      if (result.success) {
+        console.log("Calculation result:", result);
+        alert("Calculation submitted. Check console for details.");
+      } else {
+        alert("Error: " + (result.error || "Calculation failed"));
+      }
+    })
+    .catch(err => {
+      console.error("API error:", err);
+      alert("Failed to calculate: " + err.message);
+    });
+  });
+</script>
+{% endblock %}

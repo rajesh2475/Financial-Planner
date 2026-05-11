@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}New Home Loan Repayment Final{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold">New Home Loan Repayment Final</div>
+    <div class="card-body">
+      <p><strong>Source Excel File:</strong> NEW HOME LOAN REPAYMENT FINAL.xlsx</p>
+      <p>This calculator is automatically generated from the Excel workbook. Enter your inputs below to calculate results.</p>
+      
+      <form id="calcForm" method="POST">
+        <fieldset>
+          <legend class="mb-3">Input Values</legend>
+
+        <div class="form-group mb-3">
+          <label for="input_0" class="form-label">Interest Rate</label>
+          <input type="number" class="form-control" id="input_0" name="input_0" placeholder="Enter interest rate">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_1" class="form-label">TOTAL PRINCIPAL PAID</label>
+          <input type="number" class="form-control" id="input_1" name="input_1" placeholder="Enter total principal paid">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_2" class="form-label">TOTAL AMOUNT PAID AGAINST LOAN</label>
+          <input type="number" class="form-control" id="input_2" name="input_2" placeholder="Enter total amount paid against loan">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_3" class="form-label">EMI</label>
+          <input type="number" class="form-control" id="input_3" name="input_3" placeholder="Enter emi">
+        </div>
+        <div class="form-group mb-3">
+          <label for="input_4" class="form-label">PRINCIPAL PAID</label>
+          <input type="number" class="form-control" id="input_4" name="input_4" placeholder="Enter principal paid">
+        </div>
+        </fieldset>
+        
+        <button type="submit" class="btn btn-primary">Calculate</button>
+        <button type="reset" class="btn btn-secondary">Clear</button>
+        <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary">Back to Home</a>
+      </form>
+    </div>
+  </div>
+
+  {% if result %}
+  <div class="card shadow-sm">
+    <div class="card-header fw-semibold">Results</div>
+    <div class="card-body">
+      <table class="table table-bordered">
+        <tbody>
+
+        <tr>
+          <th>TOTAL INTEREST PAID</th>
+          <td id="result_0">-</td>
+        </tr>
+        <tr>
+          <th>TOTAL PRINCIPAL PAID</th>
+          <td id="result_1">-</td>
+        </tr>
+        <tr>
+          <th>TOTAL AMOUNT PAID AGAINST LOAN</th>
+          <td id="result_2">-</td>
+        </tr>
+        <tr>
+          <th>EMI</th>
+          <td id="result_3">-</td>
+        </tr>
+        <tr>
+          <th>INTEREST PAID</th>
+          <td id="result_4">-</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if error %}
+  <div class="alert alert-danger">{{ error }}</div>
+  {% endif %}
+</div>
+
+<script>
+  document.getElementById("calcForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    fetch("{{ url_for('calculators.new_home_loan_repayment_final_api') }}", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(data)
+    })
+    .then(res => res.json())
+    .then(result => {
+      if (result.success) {
+        console.log("Calculation result:", result);
+        alert("Calculation submitted. Check console for details.");
+      } else {
+        alert("Error: " + (result.error || "Calculation failed"));
+      }
+    })
+    .catch(err => {
+      console.error("API error:", err);
+      alert("Failed to calculate: " + err.message);
+    });
+  });
+</script>
+{% endblock %}

@@ -2,71 +2,719 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Wealth Navigator{% endblock %}</title>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <!-- Optional custom styles -->
-  <!-- <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"> -->
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --primary-color: #1e40af;
+      --secondary-color: #7c3aed;
+      --accent-color: #06b6d4;
+      --success-color: #10b981;
+      --warning-color: #f59e0b;
+      --danger-color: #ef4444;
+      --light-bg: #f8fafc;
+      --dark-text: #1f2937;
+      --border-color: #e5e7eb;
+    }
 
-  <!-- Font Awesome for info icons -->
-  <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
+      color: var(--dark-text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header Styles */
+    .navbar {
+      background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 1rem 2rem;
+    }
+
+    .navbar-brand {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: white !important;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .navbar-brand i {
+      margin-right: 0.5rem;
+      color: var(--accent-color);
+    }
+
+    /* Main Layout */
+    .main-container {
+      display: flex;
+      flex: 1;
+      gap: 2rem;
+      padding: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Sidebar Navigation */
+    .sidebar {
+      width: 280px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      padding: 1.5rem;
+      height: fit-content;
+      position: sticky;
+      top: 2rem;
+    }
+
+    .sidebar-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--primary-color);
+      margin-bottom: 1rem;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .sidebar-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .sidebar-section-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--dark-text);
+      margin-bottom: 0.75rem;
+      padding: 0.75rem;
+      background: linear-gradient(90deg, rgba(30, 64, 175, 0.08) 0%, rgba(124, 58, 237, 0.08) 100%);
+      border-left: 3px solid var(--primary-color);
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar-section-title:hover {
+      background: linear-gradient(90deg, rgba(30, 64, 175, 0.15) 0%, rgba(124, 58, 237, 0.15) 100%);
+      transform: translateX(4px);
+    }
+
+    .sidebar-section-title.collapsed::after {
+      content: '\f054';
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+    }
+
+    .sidebar-section-title:not(.collapsed)::after {
+      content: '\f078';
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+    }
+
+    .sidebar-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-left: 0.5rem;
+      max-height: 500px;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+
+    .sidebar-links.collapsed {
+      max-height: 0;
+    }
+
+    .sidebar-link {
+      text-decoration: none;
+      color: var(--dark-text);
+      padding: 0.6rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .sidebar-link i {
+      width: 16px;
+      text-align: center;
+      color: var(--primary-color);
+    }
+
+    .sidebar-link:hover {
+      background: linear-gradient(90deg, rgba(30, 64, 175, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%);
+      transform: translateX(4px);
+      color: var(--primary-color);
+    }
+
+    .sidebar-link.active {
+      background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+      color: white;
+      font-weight: 600;
+    }
+
+    .sidebar-link.active i {
+      color: var(--accent-color);
+    }
+
+    /* Content Area */
+    .content-area {
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* Card Styles */
+    .card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+      color: white;
+      border-radius: 12px 12px 0 0 !important;
+      font-weight: 600;
+      padding: 1.2rem;
+      border: none;
+    }
+
+    .card-body {
+      padding: 1.5rem;
+    }
+
+    /* Button Styles */
+    .btn-primary {
+      background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      padding: 0.6rem 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+    }
+
+    .btn-secondary {
+      background: var(--light-bg);
+      color: var(--dark-text);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-weight: 600;
+      padding: 0.6rem 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+      background: var(--border-color);
+      transform: translateY(-2px);
+    }
+
+    /* Form Styles */
+    .form-label {
+      font-weight: 600;
+      color: var(--dark-text);
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .form-control {
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.75rem;
+      transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+    }
+
+    /* Alert Styles */
+    .alert {
+      border-radius: 12px;
+      border: none;
+    }
+
+    .alert-info {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%);
+      color: var(--dark-text);
+    }
+
+    .alert-danger {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(244, 63, 94, 0.1) 100%);
+      color: var(--danger-color);
+    }
+
+    .alert-success {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(34, 197, 94, 0.1) 100%);
+      color: var(--success-color);
+    }
+
+    /* Footer */
+    footer {
+      background: var(--dark-text);
+      color: white;
+      padding: 3rem 0 1rem;
+      margin-top: auto;
+      font-size: 0.9rem;
+    }
+
+    .footer-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .footer-section h4 {
+      color: var(--accent-color);
+      margin-bottom: 1rem;
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .footer-section h4 i {
+      margin-right: 0.5rem;
+    }
+
+    .footer-section h5 {
+      color: white;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .footer-section p {
+      color: #ccc;
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+
+    .footer-section ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .footer-section ul li {
+      margin-bottom: 0.5rem;
+    }
+
+    .footer-section ul li a {
+      color: #ccc;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .footer-section ul li a:hover {
+      color: var(--accent-color);
+    }
+
+    .social-links {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .social-link {
+      width: 40px;
+      height: 40px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .social-link:hover {
+      background: var(--accent-color);
+      transform: translateY(-2px);
+    }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 1.5rem;
+    }
+
+    .footer-disclaimer {
+      text-align: center;
+      margin-bottom: 1rem;
+      font-size: 0.85rem;
+      color: #ccc;
+    }
+
+    .footer-disclaimer i {
+      color: var(--warning-color);
+      margin-right: 0.5rem;
+    }
+
+    .footer-copyright {
+      text-align: center;
+      font-size: 0.8rem;
+      color: #999;
+    }
+
+    .footer-copyright i {
+      color: var(--danger-color);
+    }
+
+    /* Table Styles */
+    .table {
+      margin-bottom: 0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .table thead {
+      background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+      color: white;
+    }
+
+    .table thead th {
+      border: none;
+      font-weight: 600;
+      padding: 1rem;
+    }
+
+    .table tbody td {
+      padding: 0.9rem 1rem;
+      border-color: var(--border-color);
+    }
+
+    .table tbody tr:hover {
+      background: var(--light-bg);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .main-container {
+        flex-direction: column;
+        padding: 1rem;
+      }
+
+      .sidebar {
+        width: 100%;
+        position: static;
+      }
+
+      .navbar {
+        padding: 0.75rem 1rem;
+      }
+
+      .navbar-brand {
+        font-size: 1.2rem;
+      }
+    }
+
+    /* Utility Classes */
+    .text-primary {
+      color: var(--primary-color) !important;
+    }
+
+    .text-secondary {
+      color: var(--secondary-color) !important;
+    }
+
+    .bg-gradient {
+      background: linear-gradient(135deg, rgba(30, 64, 175, 0.05) 0%, rgba(124, 58, 237, 0.05) 100%);
+    }
+
+    .shadow-sm {
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .fieldset {
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    legend {
+      font-weight: 600;
+      color: var(--primary-color);
+      padding: 0 0.5rem;
+      width: auto;
+    }
+  </style>
 </head>
 <body>
 
-  <!-- Global Navigation Bar -->
-  <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #e3f2fd;">
-    <a class="navbar-brand" href="{{ url_for('user.tax_compare') }}">Wealth Navigator</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText"
-            aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarText">
-      <ul class="navbar-nav mr-auto">
-        <li class="nav-item {% if request.endpoint == 'user.tax_compare' %}active{% endif %}">
-          <a class="nav-link" href="{{ url_for('user.tax_compare') }}">Tax Planner</a>
-        </li>
-        <li class="nav-item {% if request.endpoint == 'sip.api_stepup' %}active{% endif %}">
-          <a class="nav-link" href="{{ url_for('sip.api_stepup') }}">Incremental SIP</a>
-        </li>
-        <li class="nav-item {% if request.endpoint == 'home.loan_calculator' %}active{% endif %}">
-          <a class="nav-link" href="{{ url_for('home.loan_calculator') }}">Home Loan Calculator</a>
-        </li>
-        <li class="nav-item {% if request.endpoint == 'retire.retire_calculator' %}active{% endif %}">
-          <a class="nav-link" href="{{ url_for('retire.retire_calculator') }}">Retirement Calculator</a>
-        </li>
-        <li class="nav-item {% if request.endpoint == 'tax_full.full_tax_calculator' %}active{% endif %}">
-          <a class="nav-link" href="{{ url_for('tax_full.full_tax_calculator') }}">Comprehensive Tax</a>
-      </ul>
-      <span class="navbar-text">
-        Smart money planning
-      </span>
-    </div>
+  <!-- Header -->
+  <nav class="navbar">
+    <a class="navbar-brand" href="{{ url_for('default_page') }}">
+      <i class="fas fa-chart-line"></i>
+      Wealth Navigator
+    </a>
   </nav>
 
-  <!-- Page Header -->
-  <header class="bg-dark text-white text-center p-3">
-    <h1>Wealth Navigator</h1>
-    <p>Your guide to SIP, savings, and smart tax planning</p>
-  </header>
+  <!-- Main Container -->
+  <div class="main-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-title">
+        <i class="fas fa-compass"></i>
+        Navigation
+      </div>
 
-  <!-- Page Content -->
-  <main class="container py-4">
-    {% block content %}{% endblock %}
-  </main>
+      <!-- Popular Calculators -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-title" onclick="toggleSection(this)">
+          <span>
+            <i class="fas fa-star" style="margin-right: 0.5rem;"></i>
+            Popular
+          </span>
+        </div>
+        <div class="sidebar-links">
+          <a href="{{ url_for('calculators.home_loan_calculator') }}" class="sidebar-link">
+            <i class="fas fa-home"></i>
+            Home Loan
+          </a>
+          <a href="{{ url_for('calculators.incremental_sip_calculator') }}" class="sidebar-link">
+            <i class="fas fa-chart-bar"></i>
+            Incremental SIP
+          </a>
+          <a href="{{ url_for('calculators.retire_calculator') }}" class="sidebar-link">
+            <i class="fas fa-umbrella"></i>
+            Retirement
+          </a>
+          <a href="{{ url_for('calculators.financial_safety_number_calculator') }}" class="sidebar-link">
+            <i class="fas fa-shield-alt"></i>
+            Financial Safety
+          </a>
+        </div>
+      </div>
+
+      <!-- Housing & Property -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-title" onclick="toggleSection(this)">
+          <span>
+            <i class="fas fa-building" style="margin-right: 0.5rem;"></i>
+            Housing & Property
+          </span>
+        </div>
+        <div class="sidebar-links">
+          <a href="{{ url_for('calculators.dream_house_calculator') }}" class="sidebar-link">
+            <i class="fas fa-house"></i>
+            Dream House
+          </a>
+          <a href="{{ url_for('calculators.house_flat_purchase_eligibility_calculator') }}" class="sidebar-link">
+            <i class="fas fa-check-circle"></i>
+            Purchase Eligibility
+          </a>
+          <a href="{{ url_for('calculators.property_tax_calculator') }}" class="sidebar-link">
+            <i class="fas fa-percent"></i>
+            Property Tax
+          </a>
+          <a href="{{ url_for('calculators.rental_yield_calculator') }}" class="sidebar-link">
+            <i class="fas fa-coins"></i>
+            Rental Yield
+          </a>
+        </div>
+      </div>
+
+      <!-- Investment & Tax -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-title" onclick="toggleSection(this)">
+          <span>
+            <i class="fas fa-piggy-bank" style="margin-right: 0.5rem;"></i>
+            Investment & Tax
+          </span>
+        </div>
+        <div class="sidebar-links">
+          <a href="{{ url_for('calculators.kids_investment_calculator') }}" class="sidebar-link">
+            <i class="fas fa-child"></i>
+            Kids Investment
+          </a>
+          <a href="{{ url_for('calculators.fire') }}" class="sidebar-link">
+            <i class="fas fa-flame"></i>
+            FIRE Calculator
+          </a>
+          <a href="{{ url_for('calculators.nps_new_changes') }}" class="sidebar-link">
+            <i class="fas fa-landmark"></i>
+            NPS Changes
+          </a>
+          <a href="{{ url_for('calculators.tax_calculator') }}" class="sidebar-link">
+            <i class="fas fa-file-invoice-dollar"></i>
+            Tax Calculator
+          </a>
+        </div>
+      </div>
+
+      <!-- Planning & Budgeting -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-title" onclick="toggleSection(this)">
+          <span>
+            <i class="fas fa-tasks" style="margin-right: 0.5rem;"></i>
+            Planning & Budgeting
+          </span>
+        </div>
+        <div class="sidebar-links">
+          <a href="{{ url_for('calculators.monthly_budget_planning') }}" class="sidebar-link">
+            <i class="fas fa-calendar"></i>
+            Budget Planning
+          </a>
+          <a href="{{ url_for('calculators.my_family_financial_tracker') }}" class="sidebar-link">
+            <i class="fas fa-users"></i>
+            Family Tracker
+          </a>
+          <a href="{{ url_for('calculators.cng_vs_ev_vs_petrol') }}" class="sidebar-link">
+            <i class="fas fa-car"></i>
+            Vehicle Cost
+          </a>
+          <a href="{{ url_for('calculators.networth') }}" class="sidebar-link">
+            <i class="fas fa-wallet"></i>
+            Net Worth
+          </a>
+        </div>
+      </div>
+
+      <!-- Tax Planning -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-title" onclick="toggleSection(this)">
+          <span>
+            <i class="fas fa-briefcase" style="margin-right: 0.5rem;"></i>
+            Tax Planning
+          </span>
+        </div>
+        <div class="sidebar-links">
+          <a href="{{ url_for('user.tax_compare') }}" class="sidebar-link">
+            <i class="fas fa-balance-scale"></i>
+            Tax Comparison
+          </a>
+          <a href="{{ url_for('tax_full.full_tax_calculator') }}" class="sidebar-link">
+            <i class="fas fa-calculator"></i>
+            Comprehensive Tax
+          </a>
+          <a href="{{ url_for('calculators.income_tax_calculator_2023') }}" class="sidebar-link">
+            <i class="fas fa-money-bill"></i>
+            Income Tax 2023
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Content Area -->
+    <div class="content-area">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
 
   <!-- Footer -->
-  <footer class="bg-dark text-white text-center p-2">
-    <small>Disclaimer: This tool is for guidance only. Please consult a tax professional before filing.</small>
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4><i class="fas fa-chart-line"></i> Wealth Navigator</h4>
+          <p>Professional financial planning tools powered by Excel expertise. Plan smarter, invest wiser, achieve your financial goals.</p>
+          <div class="social-links">
+            <a href="#" class="social-link" title="Share on Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="social-link" title="Share on Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="#" class="social-link" title="Share on LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#" class="social-link" title="Share on WhatsApp"><i class="fab fa-whatsapp"></i></a>
+          </div>
+        </div>
+        
+        <div class="footer-section">
+          <h5>Popular Calculators</h5>
+          <ul>
+            <li><a href="{{ url_for('calculators.home_loan_calculator') }}">Home Loan Calculator</a></li>
+            <li><a href="{{ url_for('calculators.incremental_sip_calculator') }}">Incremental SIP</a></li>
+            <li><a href="{{ url_for('calculators.retire_calculator') }}">Retirement Calculator</a></li>
+            <li><a href="{{ url_for('user.tax_compare') }}">Tax Comparison</a></li>
+            <li><a href="{{ url_for('calculators.fire') }}">FIRE Calculator</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h5>Categories</h5>
+          <ul>
+            <li><a href="#housing">Housing & Property</a></li>
+            <li><a href="#investment">Investment & Tax</a></li>
+            <li><a href="#planning">Planning & Budgeting</a></li>
+            <li><a href="#tax">Tax Planning</a></li>
+            <li><a href="#all-calculators">All Calculators</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h5>Support</h5>
+          <ul>
+            <li><a href="#about">About Us</a></li>
+            <li><a href="#privacy">Privacy Policy</a></li>
+            <li><a href="#terms">Terms of Service</a></li>
+            <li><a href="#contact">Contact Us</a></li>
+            <li><a href="#faq">FAQ</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <div class="footer-disclaimer">
+          <p><i class="fas fa-info-circle"></i> <strong>Disclaimer:</strong> This tool is for guidance only. Please consult a financial advisor before making investment decisions. All calculations are estimates and may vary based on actual market conditions.</p>
+        </div>
+        <div class="footer-copyright">
+          <p>&copy; 2026 Wealth Navigator. All rights reserved. | Made with <i class="fas fa-heart text-danger"></i> for financial freedom</p>
+        </div>
+      </div>
+    </div>
   </footer>
 
-  <!-- Scripts -->
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
   <script>
-    $(function () {
-      $('[data-toggle="tooltip"]').tooltip()
-    })
+    // Sidebar toggle functionality
+    function toggleSection(element) {
+      const linksContainer = element.nextElementSibling;
+      element.classList.toggle('collapsed');
+      linksContainer.classList.toggle('collapsed');
+    }
+
+    // Set active link based on current URL
+    document.addEventListener('DOMContentLoaded', function() {
+      const currentPath = window.location.pathname;
+      const links = document.querySelectorAll('.sidebar-link');
+      
+      links.forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+          link.classList.add('active');
+        }
+      });
+    });
   </script>
 </body>
 </html>

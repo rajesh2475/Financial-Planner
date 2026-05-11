@@ -1,13 +1,1258 @@
 {% extends "base.html" %}
-{% block title %}Home{% endblock %}
+{% block title %}Wealth Navigator - Smart Financial Planning Tools{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-
-    <!-- Main Content -->
-    <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
-      {% include "tax_compare.html" %}
-    </main>
+<!-- Hero Section -->
+<div class="hero-section mb-5">
+  <div class="hero-content">
+    <h1 class="hero-title">
+      <i class="fas fa-chart-line text-primary"></i>
+      Take Control of Your Financial Future
+    </h1>
+    <p class="hero-subtitle">
+      Access 49+ professional financial calculators powered by Excel expertise.
+      Plan smarter, invest wiser, and achieve your financial goals with confidence.
+    </p>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <div class="stat-number">49+</div>
+        <div class="stat-label">Calculators</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">100%</div>
+        <div class="stat-label">Free</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">24/7</div>
+        <div class="stat-label">Available</div>
+      </div>
+    </div>
+    <div class="hero-buttons">
+      <a href="#popular-calculators" class="btn btn-primary btn-lg me-3">
+        <i class="fas fa-calculator"></i> Start Calculating
+      </a>
+      <a href="#features" class="btn btn-outline-primary btn-lg">
+        <i class="fas fa-info-circle"></i> Learn More
+      </a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="floating-cards">
+      <div class="floating-card card-1">
+        <i class="fas fa-home"></i>
+        <span>Home Loan</span>
+      </div>
+      <div class="floating-card card-2">
+        <i class="fas fa-piggy-bank"></i>
+        <span>SIP Calculator</span>
+      </div>
+      <div class="floating-card card-3">
+        <i class="fas fa-umbrella"></i>
+        <span>Retirement</span>
+      </div>
+    </div>
   </div>
 </div>
+
+<!-- Features Section -->
+<section id="features" class="features-section mb-5">
+  <div class="container">
+    <div class="section-header text-center mb-5">
+      <h2>Why Choose Wealth Navigator?</h2>
+      <p class="text-muted">Professional-grade financial tools designed for everyone</p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-brain"></i>
+          </div>
+          <h4>Expert-Backed</h4>
+          <p>Calculators developed by financial experts and based on proven Excel models used by professionals.</p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+          <h4>Instant Results</h4>
+          <p>Get immediate calculations and insights. No waiting, no complex spreadsheets to manage.</p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <h4>Privacy First</h4>
+          <p>All calculations happen locally. Your financial data never leaves your device.</p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-mobile-alt"></i>
+          </div>
+          <h4>Mobile Friendly</h4>
+          <p>Access your financial tools anywhere, anytime. Fully responsive design works on all devices.</p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-infinity"></i>
+          </div>
+          <h4>Always Free</h4>
+          <p>No subscriptions, no hidden fees. Professional financial planning tools for everyone.</p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-sync-alt"></i>
+          </div>
+          <h4>Regular Updates</h4>
+          <p>Stay current with the latest tax laws, investment options, and financial planning strategies.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Popular Calculators Section -->
+<section id="popular-calculators" class="popular-section mb-5">
+  <div class="container">
+    <div class="section-header text-center mb-5">
+      <h2>Most Popular Calculators</h2>
+      <p class="text-muted">Start with these essential financial planning tools</p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-4 col-md-6">
+        <div class="calculator-card">
+          <div class="calculator-icon">
+            <i class="fas fa-home"></i>
+          </div>
+          <h4>Home Loan Calculator</h4>
+          <p>Calculate EMI, total interest, and payment schedules for your dream home loan.</p>
+          <a href="{{ url_for('calculators.home_loan_calculator') }}" class="btn btn-primary">
+            Calculate Now
+          </a>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6">
+        <div class="calculator-card">
+          <div class="calculator-icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <h4>Incremental SIP Calculator</h4>
+          <p>Plan systematic investments with increasing contributions over time.</p>
+          <a href="{{ url_for('calculators.incremental_sip_calculator') }}" class="btn btn-primary">
+            Calculate Now
+          </a>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6">
+        <div class="calculator-card">
+          <div class="calculator-icon">
+            <i class="fas fa-umbrella"></i>
+          </div>
+          <h4>Retirement Calculator</h4>
+          <p>Determine your retirement corpus needs and plan your savings strategy.</p>
+          <a href="{{ url_for('calculators.retire_calculator') }}" class="btn btn-primary">
+            Calculate Now
+          </a>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6">
+        <div class="calculator-card">
+          <div class="calculator-icon">
+            <i class="fas fa-file-invoice-dollar"></i>
+          </div>
+          <h4>Tax Calculator</h4>
+          <p>Compare old vs new tax regimes and optimize your tax savings.</p>
+          <a href="{{ url_for('user.tax_compare') }}" class="btn btn-primary">
+            Calculate Now
+          </a>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6">
+        <div class="calculator-card">
+          <div class="calculator-icon">
+            <i class="fas fa-flame"></i>
+          </div>
+          <h4>FIRE Calculator</h4>
+          <p>Calculate your path to Financial Independence and Retire Early.</p>
+          <a href="{{ url_for('calculators.fire') }}" class="btn btn-primary">
+            Calculate Now
+          </a>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6">
+        <div class="calculator-card">
+          <div class="calculator-icon">
+            <i class="fas fa-child"></i>
+          </div>
+          <h4>Kids Investment Calculator</h4>
+          <p>Plan and track investments for your children's future education and goals.</p>
+          <a href="{{ url_for('calculators.kids_investment_calculator') }}" class="btn btn-primary">
+            Calculate Now
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center mt-4">
+      <a href="#all-calculators" class="btn btn-outline-primary btn-lg">
+        <i class="fas fa-list"></i> View All 49 Calculators
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Calculator Categories -->
+<section class="categories-section mb-5">
+  <div class="container">
+    <div class="section-header text-center mb-5">
+      <h2>Explore Calculator Categories</h2>
+      <p class="text-muted">Find the right tool for your financial planning needs</p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="category-card">
+          <div class="category-icon">
+            <i class="fas fa-building"></i>
+          </div>
+          <h4>Housing & Property</h4>
+          <p>Home loans, property tax, rental yield, and real estate planning tools.</p>
+          <div class="category-count">12 calculators</div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="category-card">
+          <div class="category-icon">
+            <i class="fas fa-piggy-bank"></i>
+          </div>
+          <h4>Investment & Tax</h4>
+          <p>SIP calculators, tax planning, NPS, and investment analysis tools.</p>
+          <div class="category-count">15 calculators</div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="category-card">
+          <div class="category-icon">
+            <i class="fas fa-tasks"></i>
+          </div>
+          <h4>Planning & Budgeting</h4>
+          <p>Budget planning, family finance tracking, and expense management.</p>
+          <div class="category-count">11 calculators</div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="category-card">
+          <div class="category-icon">
+            <i class="fas fa-briefcase"></i>
+          </div>
+          <h4>Tax Planning</h4>
+          <p>Income tax calculators, tax regime comparison, and deduction planning.</p>
+          <div class="category-count">8 calculators</div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="category-card">
+          <div class="category-icon">
+            <i class="fas fa-car"></i>
+          </div>
+          <h4>Vehicle & Lifestyle</h4>
+          <p>Vehicle cost analysis, EV vs traditional fuel, and lifestyle planning.</p>
+          <div class="category-count">3 calculators</div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="category-card">
+          <div class="category-icon">
+            <i class="fas fa-graduation-cap"></i>
+          </div>
+          <h4>Education & Goals</h4>
+          <p>Education planning, goal-based investing, and future planning tools.</p>
+          <div class="category-count">5 calculators</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonials-section mb-5">
+  <div class="container">
+    <div class="section-header text-center mb-5">
+      <h2>What Our Users Say</h2>
+      <p class="text-muted">Trusted by thousands of smart financial planners</p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="testimonial-card">
+          <div class="testimonial-content">
+            "Wealth Navigator helped me save ₹2.5 lakhs in taxes last year. The tax comparison tool is incredibly accurate and easy to use."
+          </div>
+          <div class="testimonial-author">
+            <div class="author-avatar">
+              <i class="fas fa-user"></i>
+            </div>
+            <div class="author-info">
+              <div class="author-name">Rajesh Kumar</div>
+              <div class="author-title">Software Engineer</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="testimonial-card">
+          <div class="testimonial-content">
+            "The home loan calculator saved me hours of Excel work. I could compare different scenarios instantly and make an informed decision."
+          </div>
+          <div class="testimonial-author">
+            <div class="author-avatar">
+              <i class="fas fa-user"></i>
+            </div>
+            <div class="author-info">
+              <div class="author-name">Priya Sharma</div>
+              <div class="author-title">Teacher</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="testimonial-card">
+          <div class="testimonial-content">
+            "Planning my retirement was overwhelming until I found these calculators. Now I have a clear roadmap for my financial future."
+          </div>
+          <div class="testimonial-author">
+            <div class="author-avatar">
+              <i class="fas fa-user"></i>
+            </div>
+            <div class="author-info">
+              <div class="author-name">Amit Patel</div>
+              <div class="author-title">Business Owner</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact Section -->
+<section id="contact" class="contact-section mb-5">
+  <div class="container">
+    <div class="section-header text-center mb-5">
+      <h2>Get In Touch</h2>
+      <p class="text-muted">Have questions or feedback? We'd love to hear from you!</p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <div class="contact-info">
+          <div class="contact-item">
+            <div class="contact-icon">
+              <i class="fas fa-envelope"></i>
+            </div>
+            <div class="contact-details">
+              <h5>Email Us</h5>
+              <p>support@wealthnavigator.com</p>
+              <p>We respond within 24 hours</p>
+            </div>
+          </div>
+
+          <div class="contact-item">
+            <div class="contact-icon">
+              <i class="fas fa-comments"></i>
+            </div>
+            <div class="contact-details">
+              <h5>Live Chat</h5>
+              <p>Available 9 AM - 6 PM IST</p>
+              <p>Instant support for urgent queries</p>
+            </div>
+          </div>
+
+          <div class="contact-item">
+            <div class="contact-icon">
+              <i class="fas fa-question-circle"></i>
+            </div>
+            <div class="contact-details">
+              <h5>FAQ</h5>
+              <p>Find answers to common questions</p>
+              <p>Updated regularly</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="contact-form">
+          <form>
+            <div class="mb-3">
+              <label for="name" class="form-label">Name</label>
+              <input type="text" class="form-control" id="name" placeholder="Your full name">
+            </div>
+            <div class="mb-3">
+              <label for="email" class="form-label">Email</label>
+              <input type="email" class="form-control" id="email" placeholder="your.email@example.com">
+            </div>
+            <div class="mb-3">
+              <label for="subject" class="form-label">Subject</label>
+              <select class="form-control" id="subject">
+                <option>General Inquiry</option>
+                <option>Technical Support</option>
+                <option>Feature Request</option>
+                <option>Bug Report</option>
+                <option>Partnership</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="message" class="form-label">Message</label>
+              <textarea class="form-control" id="message" rows="4" placeholder="Tell us how we can help you..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-paper-plane"></i> Send Message
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- All Calculators Section -->
+<section id="all-calculators" class="all-calculators-section mb-5">
+  <div class="container">
+    <div class="section-header text-center mb-5">
+      <h2>All Available Calculators</h2>
+      <p class="text-muted">Browse our complete collection of financial planning tools</p>
+    </div>
+
+    <div class="calculators-grid">
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators._500_to_1_crore_building_calculator') }}">
+          <i class="fas fa-building"></i>
+          <span>500 to 1 Crore Building Calculator</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.ask_06th_feb_2026') }}">
+          <i class="fas fa-calculator"></i>
+          <span>ASK 06th Feb 2026</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.ask_15th_march_2026_show') }}">
+          <i class="fas fa-calculator"></i>
+          <span>ASK 15th March 2026</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.ask') }}">
+          <i class="fas fa-calculator"></i>
+          <span>ASK Calculator</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.askmoneypurse_272') }}">
+          <i class="fas fa-calculator"></i>
+          <span>ASK Money Purse 272</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.banking_funds_portfolio_overlap_data') }}">
+          <i class="fas fa-chart-pie"></i>
+          <span>Banking Funds Portfolio</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.budget_2024_income_tax_calculation_sheet') }}">
+          <i class="fas fa-file-invoice-dollar"></i>
+          <span>Budget 2024 Tax Calculator</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.cng_vs_ev_vs_petrol') }}">
+          <i class="fas fa-car"></i>
+          <span>CNG vs EV vs Petrol</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.car_purchase_vs_ride_hailing_apps') }}">
+          <i class="fas fa-taxi"></i>
+          <span>Car Purchase vs Ride Hailing</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.checklist_for_health_insurance_selection') }}">
+          <i class="fas fa-heartbeat"></i>
+          <span>Health Insurance Checklist</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.credit_cards_data_2') }}">
+          <i class="fas fa-credit-card"></i>
+          <span>Credit Cards Data</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.dcf_calculator') }}">
+          <i class="fas fa-chart-bar"></i>
+          <span>DCF Calculator</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.dream_house_calculator') }}">
+          <i class="fas fa-house"></i>
+          <span>Dream House Calculator</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.defence_sector') }}">
+          <i class="fas fa-shield-alt"></i>
+          <span>Defence Sector</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.dream_house_with_etf_strategy') }}">
+          <i class="fas fa-home"></i>
+          <span>Dream House with ETF</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.dream_vehicle_eleigibility_calculator') }}">
+          <i class="fas fa-car"></i>
+          <span>Dream Vehicle Eligibility</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.ev_vs_petrol_claculator') }}">
+          <i class="fas fa-charging-station"></i>
+          <span>EV vs Petrol Calculator</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.financial_safety_number_calculator') }}">
+          <i class="fas fa-shield-alt"></i>
+          <span>Financial Safety Number</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.fire') }}">
+          <i class="fas fa-flame"></i>
+          <span>FIRE Calculator</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.fp_of_23rd_nov_2025') }}">
+          <i class="fas fa-calculator"></i>
+          <span>FP 23rd Nov 2025</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.fp_to_buy_house_2') }}">
+          <i class="fas fa-home"></i>
+          <span>FP to Buy House 2</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.fp_to_buy_house') }}">
+          <i class="fas fa-home"></i>
+          <span>FP to Buy House</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.fixed_returncalc') }}">
+          <i class="fas fa-chart-line"></i>
+          <span>Fixed Return Calculator</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.home_loan_repayment_final') }}">
+          <i class="fas fa-home"></i>
+          <span>Home Loan Repayment Final</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.health_insurance_edited_aa_1') }}">
+          <i class="fas fa-heartbeat"></i>
+          <span>Health Insurance Edited</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.home_loan_calculator') }}">
+          <i class="fas fa-home"></i>
+          <span>Home Loan Calculator</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.home_loan_emi') }}">
+          <i class="fas fa-home"></i>
+          <span>Home Loan EMI</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.home_loan_transfer_calculator_2') }}">
+          <i class="fas fa-home"></i>
+          <span>Home Loan Transfer 2</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.home_loan_transfer_calculator') }}">
+          <i class="fas fa-home"></i>
+          <span>Home Loan Transfer</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.house_flat_purchase_eligibility_calculator') }}">
+          <i class="fas fa-check-circle"></i>
+          <span>House Purchase Eligibility</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.income_tax_calculator_2023') }}">
+          <i class="fas fa-file-invoice-dollar"></i>
+          <span>Income Tax Calculator 2023</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.incremental_investment_calculator') }}">
+          <i class="fas fa-chart-line"></i>
+          <span>Incremental Investment</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.incremental_sip_calculator') }}">
+          <i class="fas fa-chart-bar"></i>
+          <span>Incremental SIP Calculator</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.kids_investment_calculator') }}">
+          <i class="fas fa-child"></i>
+          <span>Kids Investment Calculator</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.monthly_budget_planning_3') }}">
+          <i class="fas fa-calendar"></i>
+          <span>Monthly Budget Planning 3</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.monthly_budget_planning') }}">
+          <i class="fas fa-calendar"></i>
+          <span>Monthly Budget Planning</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.my_family_financial_tracker') }}">
+          <i class="fas fa-users"></i>
+          <span>Family Financial Tracker</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.networth') }}">
+          <i class="fas fa-wallet"></i>
+          <span>Net Worth Calculator</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.new_home_loan_repayment_final') }}">
+          <i class="fas fa-home"></i>
+          <span>New Home Loan Repayment</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.nps_new_changes') }}">
+          <i class="fas fa-landmark"></i>
+          <span>NPS New Changes</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.nps_vatsalya') }}">
+          <i class="fas fa-landmark"></i>
+          <span>NPS Vatsalya</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.property_tax_calculator') }}">
+          <i class="fas fa-percent"></i>
+          <span>Property Tax Calculator</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.rental_yield_calculator') }}">
+          <i class="fas fa-coins"></i>
+          <span>Rental Yield Calculator</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.tax_saver_work_sheet') }}">
+          <i class="fas fa-file-invoice-dollar"></i>
+          <span>Tax Saver Worksheet</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.tax_cal_with_new_income_tax_act_2025') }}">
+          <i class="fas fa-file-invoice-dollar"></i>
+          <span>Tax Calculator 2025</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.tax_calculator') }}">
+          <i class="fas fa-file-invoice-dollar"></i>
+          <span>Tax Calculator</span>
+        </a>
+      </div>
+      <div class="calculator-item">
+        <a href="{{ url_for('calculators.retire_calculator') }}">
+          <i class="fas fa-umbrella"></i>
+          <span>Retirement Calculator</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-content">
+      <h2>Ready to Take Control of Your Finances?</h2>
+      <p>Start using our professional financial calculators today. No signup required, completely free.</p>
+      <div class="cta-buttons">
+        <a href="#popular-calculators" class="btn btn-primary btn-lg me-3">
+          <i class="fas fa-rocket"></i> Get Started Now
+        </a>
+        <a href="#features" class="btn btn-outline-light btn-lg">
+          <i class="fas fa-question-circle"></i> Learn More
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
 {% endblock %}
+
+<style>
+/* Hero Section */
+.hero-section {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 50%, var(--accent-color) 100%);
+  color: white;
+  padding: 4rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  opacity: 0.3;
+}
+
+.hero-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  position: relative;
+  z-index: 2;
+}
+
+.hero-title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.hero-title i {
+  display: block;
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.9;
+}
+
+.hero-subtitle {
+  font-size: 1.3rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  opacity: 0.9;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+.hero-stats {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  margin-bottom: 2.5rem;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: 800;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 1rem;
+  opacity: 0.8;
+  font-weight: 600;
+}
+
+.hero-buttons {
+  text-align: center;
+}
+
+.hero-visual {
+  position: absolute;
+  top: 50%;
+  right: 10%;
+  transform: translateY(-50%);
+  z-index: 1;
+}
+
+.floating-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.floating-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  animation: float 6s ease-in-out infinite;
+}
+
+.floating-card i {
+  font-size: 1.5rem;
+  color: var(--accent-color);
+}
+
+.floating-card span {
+  font-weight: 600;
+}
+
+.card-1 { animation-delay: 0s; }
+.card-2 { animation-delay: 2s; }
+.card-3 { animation-delay: 4s; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Features Section */
+.features-section {
+  padding: 4rem 0;
+  background: var(--light-bg);
+}
+
+.section-header h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--dark-text);
+}
+
+.section-header p {
+  font-size: 1.1rem;
+}
+
+.feature-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  height: 100%;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  font-size: 2rem;
+  color: white;
+}
+
+.feature-card h4 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--dark-text);
+}
+
+.feature-card p {
+  color: #666;
+  line-height: 1.6;
+}
+
+/* Popular Calculators */
+.popular-section {
+  padding: 4rem 0;
+}
+
+.calculator-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  height: 100%;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.calculator-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.calculator-icon {
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  font-size: 1.8rem;
+  color: white;
+}
+
+.calculator-card h4 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--dark-text);
+}
+
+.calculator-card p {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+/* Categories Section */
+.categories-section {
+  padding: 4rem 0;
+  background: var(--light-bg);
+}
+
+.category-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  height: 100%;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.category-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.category-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  font-size: 1.5rem;
+  color: white;
+}
+
+.category-card h4 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--dark-text);
+}
+
+.category-card p {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.category-count {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  background: rgba(30, 64, 175, 0.1);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+/* Testimonials */
+.testimonials-section {
+  padding: 4rem 0;
+}
+
+.testimonial-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  height: 100%;
+}
+
+.testimonial-content {
+  font-style: italic;
+  color: #555;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+  font-size: 1rem;
+}
+
+.testimonial-author {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.author-avatar {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.author-name {
+  font-weight: 600;
+  color: var(--dark-text);
+  margin-bottom: 0.25rem;
+}
+
+.author-title {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* All Calculators */
+.all-calculators-section {
+  padding: 4rem 0;
+  background: var(--light-bg);
+}
+
+.calculators-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.calculator-item {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.calculator-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.calculator-item a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  text-decoration: none;
+  color: var(--dark-text);
+  font-weight: 500;
+}
+
+.calculator-item a:hover {
+  color: var(--primary-color);
+}
+
+.calculator-item i {
+  color: var(--primary-color);
+  width: 20px;
+  text-align: center;
+}
+
+/* CTA Section */
+.cta-section {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  color: white;
+  padding: 4rem 0;
+  text-align: center;
+}
+
+.cta-content h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.cta-content p {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+.cta-buttons .btn-outline-light:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: white;
+}
+
+/* Contact Section */
+.contact-section {
+  padding: 4rem 0;
+  background: var(--light-bg);
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.contact-icon {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.contact-details h5 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--dark-text);
+}
+
+.contact-details p {
+  color: #666;
+  margin-bottom: 0.25rem;
+  line-height: 1.5;
+}
+
+.contact-form {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.5rem;
+  }
+
+  .hero-stats {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .hero-visual {
+    display: none;
+  }
+
+  .section-header h2 {
+    font-size: 2rem;
+  }
+
+  .calculators-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .features-section,
+  .popular-section,
+  .categories-section,
+  .testimonials-section,
+  .all-calculators-section {
+    padding: 2rem 0;
+  }
+
+  .cta-content h2 {
+    font-size: 2rem;
+  }
+}
+</style>
+

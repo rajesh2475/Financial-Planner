@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Calculator: {{ file_name }}{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm mb-4">
+  <div class="card-header fw-semibold">Excel-backed Calculator</div>
+  <div class="card-body">
+    <p><strong>Excel file:</strong> {{ file_name }}</p>
+    <p>This is a placeholder page for the calculator represented by the Excel file.</p>
+    <p><strong>API Endpoint:</strong> <a href="{{ metadata.api_url }}">{{ metadata.api_url }}</a></p>
+    <div class="alert alert-info">
+      <p>Use the API to retrieve placeholder metadata for this file. This is the first step toward building a real calculator page from the workbook.</p>
+    </div>
+    <pre id="api-result" class="bg-light p-3 border rounded">Loading API metadata...</pre>
+    <p>To complete this page, implement the specific input form and calculation logic from the workbook.</p>
+    <a class="btn btn-secondary" href="{{ url_for('excel.excel_index') }}">Back to Excel list</a>
+  </div>
+</div>
+
+<script>
+  fetch("{{ metadata.api_url }}")
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('api-result').textContent = JSON.stringify(data, null, 2);
+    })
+    .catch(err => {
+      document.getElementById('api-result').textContent = 'Unable to load API metadata: ' + err;
+    });
+</script>
+{% endblock %}
