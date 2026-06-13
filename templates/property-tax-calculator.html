@@ -6,78 +6,50 @@
   <div class="card shadow-sm mb-4">
     <div class="card-header fw-semibold">Property Tax Calculator</div>
     <div class="card-body">
-      <p><strong>Source Excel File:</strong> PROPERTY TAX CALCULATOR.xlsx</p>
       <p>This calculator is automatically generated from the Excel workbook. Enter your inputs below to calculate results.</p>
       
-      <form id="calcForm" method="POST">
+      <form id="calcForm" method="POST" novalidate>
         <fieldset>
           <legend class="mb-3">Input Values</legend>
 
         <div class="form-group mb-3">
-          <label for="input_0" class="form-label">Cost Inflation Index (CII)</label>
-          <input type="number" class="form-control" id="input_0" name="input_0" placeholder="Enter cost inflation index (cii)">
+          <label for="input_0" class="form-label">Property Value (INR) <span class="text-danger">*</span></label>
+          <input type="number" class="form-control" id="input_0" name="input_0" placeholder="Enter current market value of the property" required aria-required="true">
+          <small class="text-muted">Use the sale price or market valuation of the property.</small>
         </div>
+
         <div class="form-group mb-3">
-          <label for="input_1" class="form-label">HOLDING PERIOD</label>
-          <input type="number" class="form-control" id="input_1" name="input_1" placeholder="Enter holding period">
+          <label for="input_1" class="form-label">Tax Rate (%)</label>
+          <input type="number" class="form-control" id="input_1" name="input_1" placeholder="Enter tax rate (e.g., 2)" step="0.01">
+          <small class="text-muted">Optional: enter tax rate as percentage (defaults used by backend if blank).</small>
         </div>
-        <div class="form-group mb-3">
-          <label for="input_2" class="form-label">ADDED TO YOUR INCOME</label>
-          <input type="number" class="form-control" id="input_2" name="input_2" placeholder="Enter added to your income">
-        </div>
+
         </fieldset>
         
-        <button type="submit" class="btn btn-primary">Calculate</button>
-        <button type="reset" class="btn btn-secondary">Clear</button>
-        <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary">Back to Home</a>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">Calculate</button>
+          <button type="reset" class="btn btn-secondary">Clear</button>
+          <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary">Back to Home</a>
+        </div>
       </form>
+
+      <div id="propTaxError" style="display:none;" class="alert alert-danger mt-3"></div>
+
+      <div id="resultsCard" class="card shadow-sm mt-4" style="display:none;">
+        <div class="card-header fw-semibold">Results</div>
+        <div class="card-body">
+          <table class="table table-bordered">
+            <tbody>
+            <tr>
+              <th>Estimated Tax Payable</th>
+              <td id="result_tax">-</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
-
-  {% if result %}
-  <div class="card shadow-sm">
-    <div class="card-header fw-semibold">Results</div>
-    <div class="card-body">
-      <table class="table table-bordered">
-        <tbody>
-
-        <tr>
-          <th>TAX CALCULATION AS PER THE OLD TAX ON WITH INDEXATION</th>
-          <td id="result_0">-</td>
-        </tr>
-        <tr>
-          <th>TAX CALCULATION AS PER THE NEW TAX</th>
-          <td id="result_1">-</td>
-        </tr>
-        <tr>
-          <th>SHORT TERM CAPITAL GAINS</th>
-          <td id="result_2">-</td>
-        </tr>
-        <tr>
-          <th>GAINS ON SALE</th>
-          <td id="result_3">-</td>
-        </tr>
-        <tr>
-          <th>TAX ON SHORT TERM CAPITAL GAINS</th>
-          <td id="result_4">-</td>
-        </tr>
-        <tr>
-          <th>PAYABLE TAX ON SALE</th>
-          <td id="result_5">-</td>
-        </tr>
-        <tr>
-          <th>=IF(G10<2," AS PER TAX SLABS", "NA")</th>
-          <td id="result_6">-</td>
-        </tr>
-        <tr>
-          <th>=IF(M10<2,"AS PER TAX SLABS", "NA")</th>
-          <td id="result_7">-</td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  {% endif %}
 
   {% if error %}
   <div class="alert alert-danger">{{ error }}</div>
@@ -85,28 +57,27 @@
 </div>
 
 <script>
-  document.getElementById("calcForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-    const data = Object.fromEntries(formData);
-    fetch("{{ url_for('calculators.property_tax_calculator_api') }}", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(data)
-    })
-    .then(res => res.json())
-    .then(result => {
-      if (result.success) {
-        console.log("Calculation result:", result);
-        alert("Calculation submitted. Check console for details.");
-      } else {
-        alert("Error: " + (result.error || "Calculation failed"));
-      }
-    })
-    .catch(err => {
-      console.error("API error:", err);
-      alert("Failed to calculate: " + err.message);
-    });
+  function showPropError(msg){ const el=document.getElementById('propTaxError'); el.style.display='block'; el.textContent=msg; document.getElementById('resultsCard').style.display='none'; }
+  function clearPropError(){ const el=document.getElementById('propTaxError'); el.style.display='none'; el.textContent=''; }
+
+  document.getElementById('calcForm').addEventListener('submit', function(e){
+    e.preventDefault(); clearPropError();
+    const fd = new FormData(this); const data = Object.fromEntries(fd.entries());
+    Object.keys(data).forEach(k=>{ const n=parseFloat(data[k]); if(!isNaN(n)) data[k]=n; });
+
+    if(!data.input_0 || Number(data.input_0) <= 0) { showPropError('Please enter property value.'); return false; }
+
+    fetch("{{ url_for('calculators.property_tax_calculator_api') }}", { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) })
+    .then(r=>r.json()).then(resp=>{
+      if(resp && resp.success){
+        const res = resp.result || resp;
+        const fmt = new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR'});
+        if(res.tax !== undefined) document.getElementById('result_tax').innerText = fmt.format(res.tax);
+        document.getElementById('resultsCard').style.display='block';
+      } else { showPropError((resp&&resp.error)?resp.error:'Calculation failed'); }
+    }).catch(err=>{ console.error('API error',err); showPropError('Failed to calculate: '+(err.message||err)); });
   });
+
+  document.getElementById('calcForm').addEventListener('reset', function(){ document.getElementById('resultsCard').style.display='none'; clearPropError(); });
 </script>
 {% endblock %}

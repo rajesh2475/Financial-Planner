@@ -6,135 +6,250 @@
   <div class="card shadow-sm mb-4">
     <div class="card-header fw-semibold">Monthly Budget Planning</div>
     <div class="card-body">
-      <p><strong>Source Excel File:</strong> Monthly Budget Planning.xlsx</p>
-      <p>This calculator is automatically generated from the Excel workbook. Enter your inputs below to calculate results.</p>
+      <p>Plan your monthly budget by tracking income and expenses (EMIs).</p>
       
-      <form id="calcForm" method="POST">
-        <fieldset>
-          <legend class="mb-3">Input Values</legend>
+      {% if error %}
+      <div class="alert alert-danger alert-dismissible fade show">
+        <i class="fas fa-exclamation-circle"></i> {{ error }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      {% endif %}
 
-        <div class="form-group mb-3">
-          <label for="input_0" class="form-label">MONTHLY INCOME</label>
-          <input type="number" class="form-control" id="input_0" name="input_0" placeholder="Enter monthly income">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_1" class="form-label">HOME LOAN EMI</label>
-          <input type="number" class="form-control" id="input_1" name="input_1" placeholder="Enter home loan emi">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_2" class="form-label">ADDITIONAL INCOME</label>
-          <input type="number" class="form-control" id="input_2" name="input_2" placeholder="Enter additional income">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_3" class="form-label">CAR LOAN EMI</label>
-          <input type="number" class="form-control" id="input_3" name="input_3" placeholder="Enter car loan emi">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_4" class="form-label">RENTAL INCOME</label>
-          <input type="number" class="form-control" id="input_4" name="input_4" placeholder="Enter rental income">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_5" class="form-label">PERSONAL LOAN EMI</label>
-          <input type="number" class="form-control" id="input_5" name="input_5" placeholder="Enter personal loan emi">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_6" class="form-label">SPOUSE'S INCOME</label>
-          <input type="number" class="form-control" id="input_6" name="input_6" placeholder="Enter spouse's income">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_7" class="form-label">OTHER EMIS</label>
-          <input type="number" class="form-control" id="input_7" name="input_7" placeholder="Enter other emis">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_8" class="form-label">TOTAL EMIs</label>
-          <input type="number" class="form-control" id="input_8" name="input_8" placeholder="Enter total emis">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_9" class="form-label">MEDICAL EXPENSES</label>
-          <input type="number" class="form-control" id="input_9" name="input_9" placeholder="Enter medical expenses">
-        </div>
+      <form id="calcForm" method="POST" onsubmit="return validateBudgetForm(event)">
+        <fieldset>
+          <legend class="mb-3">Monthly Income <span class="text-danger">*</span></legend>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="salary" class="form-label">
+                  <span class="text-danger">*</span> Primary Monthly Income (₹)
+                </label>
+                <input type="number" class="form-control" id="salary" name="input_0" 
+                       placeholder="e.g., 1,00,000" step="1000" oninput="clearError(this); calculateBudget()">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="spouse_income" class="form-label">Spouse's Monthly Income (₹)</label>
+                <input type="number" class="form-control" id="spouse_income" name="input_6"
+                       placeholder="e.g., 75,000" step="1000" oninput="calculateBudget()">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="additional_income" class="form-label">Additional/Side Income (₹)</label>
+                <input type="number" class="form-control" id="additional_income" name="input_2"
+                       placeholder="Optional" step="1000" oninput="calculateBudget()">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="rental_income" class="form-label">Rental Income (₹)</label>
+                <input type="number" class="form-control" id="rental_income" name="input_4"
+                       placeholder="Optional" step="1000" oninput="calculateBudget()">
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-light p-3 rounded mb-4">
+            <h6>Total Monthly Income</h6>
+            <h3 class="text-primary" id="totalIncome">₹ 0</h3>
+          </div>
         </fieldset>
-        
-        <button type="submit" class="btn btn-primary">Calculate</button>
-        <button type="reset" class="btn btn-secondary">Clear</button>
-        <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary">Back to Home</a>
+
+        <fieldset>
+          <legend class="mb-3">Monthly Obligations (EMIs & Expenses)</legend>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="home_emi" class="form-label">Home Loan EMI (₹)</label>
+                <input type="number" class="form-control" id="home_emi" name="input_1"
+                       placeholder="Optional" step="100" oninput="calculateBudget()">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="car_emi" class="form-label">Car Loan EMI (₹)</label>
+                <input type="number" class="form-control" id="car_emi" name="input_3"
+                       placeholder="Optional" step="100" oninput="calculateBudget()">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="personal_emi" class="form-label">Personal Loan EMI (₹)</label>
+                <input type="number" class="form-control" id="personal_emi" name="input_5"
+                       placeholder="Optional" step="100" oninput="calculateBudget()">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="other_emi" class="form-label">Other EMIs (₹)</label>
+                <input type="number" class="form-control" id="other_emi" name="input_7"
+                       placeholder="Optional" step="100" oninput="calculateBudget()">
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-light p-3 rounded mb-4">
+            <h6>Total Monthly Obligations</h6>
+            <h3 class="text-danger" id="totalEmis">₹ 0</h3>
+            <small class="text-muted">Sum of all EMIs automatically calculated</small>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend class="mb-3">Other Monthly Expenses</legend>
+          <div class="form-group mb-3">
+            <label for="medical" class="form-label">Medical Expenses (₹)</label>
+            <input type="number" class="form-control" id="medical" name="input_9"
+                   placeholder="Optional" step="100" oninput="calculateBudget()">
+          </div>
+        </fieldset>
+
+        <div class="bg-success text-white p-4 rounded mb-4">
+          <h5>Budget Summary</h5>
+          <div class="row mt-3">
+            <div class="col-md-6">
+              <p class="mb-1">Net Monthly Balance</p>
+              <h4 id="netBalance">₹ 0</h4>
+            </div>
+            <div class="col-md-6">
+              <p class="mb-1">EMI to Income Ratio</p>
+              <h4 id="emiRatio">0% <span class="fs-6">(Recommended: <40%)</span></h4>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary"><i class="fas fa-calculator"></i> Finalize Budget</button>
+          <button type="reset" class="btn btn-secondary" onclick="resetBudget()">Clear All</button>
+          <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary"><i class="fas fa-home"></i> Back</a>
+        </div>
       </form>
     </div>
   </div>
 
+  <!-- Results Section -->
   {% if result %}
-  <div class="card shadow-sm">
-    <div class="card-header fw-semibold">Results</div>
+  <div class="card shadow-sm mt-4">
+    <div class="card-header fw-semibold bg-success text-white">
+      <i class="fas fa-check-circle"></i> Budget Analysis
+    </div>
     <div class="card-body">
       <table class="table table-bordered">
-        <tbody>
-
         <tr>
-          <th>HOME LOAN EMI</th>
-          <td id="result_0">-</td>
+          <th>Total Monthly Income</th>
+          <td>₹ {{ "{:,.0f}".format(result.get('total_income', 0)) }}</td>
         </tr>
         <tr>
-          <th>PROPERTY TAX</th>
-          <td id="result_1">-</td>
+          <th>Total Monthly Obligations</th>
+          <td class="text-danger">₹ {{ "{:,.0f}".format(result.get('total_emis', 0)) }}</td>
         </tr>
         <tr>
-          <th>CAR LOAN EMI</th>
-          <td id="result_2">-</td>
+          <th>Other Expenses</th>
+          <td>₹ {{ "{:,.0f}".format(result.get('other_expenses', 0)) }}</td>
         </tr>
-        <tr>
-          <th>PERSONAL LOAN EMI</th>
-          <td id="result_3">-</td>
+        <tr class="table-success fw-bold">
+          <th>Available for Savings/Discretionary</th>
+          <td>₹ {{ "{:,.0f}".format(result.get('available', 0)) }}</td>
         </tr>
-        <tr>
-          <th>OTHER EMIS</th>
-          <td id="result_4">-</td>
-        </tr>
-        <tr>
-          <th>TOTAL MONTHLY INFLOW</th>
-          <td id="result_5">-</td>
-        </tr>
-        <tr>
-          <th>TOTAL EMIs</th>
-          <td id="result_6">-</td>
-        </tr>
-        <tr>
-          <th>INSURANCE PREMIUMS</th>
-          <td id="result_7">-</td>
-        </tr>
-        </tbody>
       </table>
     </div>
   </div>
   {% endif %}
 
-  {% if error %}
-  <div class="alert alert-danger">{{ error }}</div>
-  {% endif %}
+  <!-- Generic API results (populated by base.js) -->
+  <div id="resultsCard" class="card shadow-sm mt-4" style="display:none;">
+    <div class="card-header fw-semibold bg-primary text-white">API Results</div>
+    <div class="card-body">
+      <table class="table table-bordered">
+        <tbody>
+          <tr><th>Total Expenses</th><td id="result_total_expenses">-</td></tr>
+          <tr><th>Savings</th><td id="result_savings">-</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
 <script>
-  document.getElementById("calcForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-    const data = Object.fromEntries(formData);
-    fetch("{{ url_for('calculators.monthly_budget_planning_api') }}", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(data)
-    })
-    .then(res => res.json())
-    .then(result => {
-      if (result.success) {
-        console.log("Calculation result:", result);
-        alert("Calculation submitted. Check console for details.");
-      } else {
-        alert("Error: " + (result.error || "Calculation failed"));
-      }
-    })
-    .catch(err => {
-      console.error("API error:", err);
-      alert("Failed to calculate: " + err.message);
-    });
-  });
+function clearError(element) {
+  element.classList.remove('is-invalid');
+}
+
+function setError(element, message) {
+  element.classList.add('is-invalid');
+}
+
+function calculateBudget() {
+  const salary = parseFloat(document.getElementById('salary').value) || 0;
+  const spouse = parseFloat(document.getElementById('spouse_income').value) || 0;
+  const additional = parseFloat(document.getElementById('additional_income').value) || 0;
+  const rental = parseFloat(document.getElementById('rental_income').value) || 0;
+  
+  const homeEmi = parseFloat(document.getElementById('home_emi').value) || 0;
+  const carEmi = parseFloat(document.getElementById('car_emi').value) || 0;
+  const personalEmi = parseFloat(document.getElementById('personal_emi').value) || 0;
+  const otherEmi = parseFloat(document.getElementById('other_emi').value) || 0;
+  const medical = parseFloat(document.getElementById('medical').value) || 0;
+  
+  const totalIncome = salary + spouse + additional + rental;
+  const totalEmis = homeEmi + carEmi + personalEmi + otherEmi;
+  const totalExpenses = totalEmis + medical;
+  const netBalance = totalIncome - totalExpenses;
+  const emiRatio = totalIncome > 0 ? ((totalEmis / totalIncome) * 100).toFixed(1) : 0;
+  
+  document.getElementById('totalIncome').textContent = '₹ ' + Math.round(totalIncome).toLocaleString('en-IN');
+  document.getElementById('totalEmis').textContent = '₹ ' + Math.round(totalEmis).toLocaleString('en-IN');
+  document.getElementById('netBalance').textContent = '₹ ' + Math.round(netBalance).toLocaleString('en-IN');
+  
+  const ratioColor = emiRatio <= 40 ? 'text-success' : (emiRatio <= 50 ? 'text-warning' : 'text-danger');
+  document.getElementById('emiRatio').className = ratioColor;
+  document.getElementById('emiRatio').textContent = emiRatio + '% (Recommended: <40%)';
+  
+  // Color code the balance
+  if (netBalance < 0) {
+    document.querySelector('.bg-success').className = 'bg-danger text-white p-4 rounded mb-4';
+  } else if (netBalance < totalIncome * 0.2) {
+    document.querySelector('.bg-danger').className = 'bg-warning text-dark p-4 rounded mb-4';
+  } else {
+    document.querySelector('.bg-warning').className = 'bg-success text-white p-4 rounded mb-4';
+  }
+}
+
+function resetBudget() {
+  document.getElementById('totalIncome').textContent = '₹ 0';
+  document.getElementById('totalEmis').textContent = '₹ 0';
+  document.getElementById('netBalance').textContent = '₹ 0';
+  document.getElementById('emiRatio').textContent = '0%';
+}
+
+function validateBudgetForm(event) {
+  const salary = document.getElementById('salary');
+  if (!salary.value || parseFloat(salary.value) <= 0) {
+    setError(salary, 'Please enter primary monthly income');
+    event.preventDefault();
+    return false;
+  }
+  clearError(salary);
+  return true;
+}
+
+document.addEventListener('DOMContentLoaded', calculateBudget);
 </script>
+
+<style>
+.is-invalid {
+  border-color: #dc3545 !important;
+}
+</style>
 {% endblock %}
+

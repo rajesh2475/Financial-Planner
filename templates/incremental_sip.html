@@ -2,104 +2,294 @@
 {% block title %}Incremental SIP Calculator{% endblock %}
 
 {% block content %}
-<div class="card shadow-sm mb-4">
-  <div class="card-header fw-semibold">Incremental SIP Inputs</div>
-  <div class="card-body">
-    <form method="POST" action="{{ url_for('sip.api_stepup') }}">
-      <table class="table table-bordered">
-        <tr>
-          <th>Planned Monthly Investment</th>
-          <td><input type="number" name="plannedMonthlyInvestment" value="{{ form.plannedMonthlyInvestment }}" class="form-control"></td>
-        </tr>
-        <tr>
-          <th>Years of Investment</th>
-          <td><input type="number" name="yearsOfInvestment" value="{{ form.yearsOfInvestment }}" class="form-control"></td>
-        </tr>
-        <tr>
-          <th>Annual Return (%)</th>
-          <td>
-            <div class="input-group">
-              <input type="number" step="0.01" max="100" name="annualReturn" value="{{ form.annualReturn }}" class="form-control">
-              <span class="input-group-text">%</span>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <th>Increment Mode</th>
-          <td>
-            <select name="mode" class="form-select" id="modeSelect">
-              <option value="percent" {% if form.mode == 'percent' %}selected{% endif %}>Percent</option>
-              <option value="value" {% if form.mode == 'value' %}selected{% endif %}>Value</option>
-            </select>
-          </td>
-        </tr>
-        <tr id="incrementPercentRow" {% if form.mode != 'percent' %}style="display:none;"{% endif %}>
-          <th>Increment Value (%)</th>
-          <td>
-            <div class="input-group">
-              <input type="number" step="0.01" max="100" name="incrementValue" value="{{ form.incrementValue }}" class="form-control">
-              <span class="input-group-text">%</span>
-            </div>
-          </td>
-        </tr>
-        <tr id="incrementValueRow" {% if form.mode != 'value' %}style="display:none;"{% endif %}>
-          <th>Increment Value (absolute)</th>
-          <td><input type="number" step="0.01" name="incrementValue" value="{{ form.incrementValue }}" class="form-control"></td>
-        </tr>
-        <tr>
-          <th>Holding Years</th>
-          <td><input type="number" name="holdingYears" value="{{ form.holdingYears }}" class="form-control"></td>
-        </tr>
-      </table>
-      <button type="submit" class="btn btn-primary">Calculate</button>
-    </form>
-  </div>
-</div>
+<div class="container mt-4">
+  <div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold">Incremental SIP Calculator</div>
+    <div class="card-body">
+      <p>Calculate growth of your SIP with annual increments to beat inflation.</p>
+      
+      {% if error %}
+      <div class="alert alert-danger alert-dismissible fade show">
+        <i class="fas fa-exclamation-circle"></i> {{ error }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      {% endif %}
 
-{% if result %}
-<div class="card shadow-sm">
-  <div class="card-header fw-semibold">Results</div>
-  <div class="card-body">
-    <div class="alert alert-info">
-      <strong>Final Value:</strong> {{ result.summary.final_value }} <br>
-      <strong>Total Invested:</strong> {{ result.summary.total_invested }} <br>
-      <strong>Gain:</strong> {{ result.summary.gain }}
+      <form id="sipForm" onsubmit="return submitSipForm(event)">
+        <fieldset>
+          <legend class="mb-3">Investment Details <span class="text-danger">*</span></legend>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="monthly_inv" class="form-label">
+                  <span class="text-danger">*</span> Monthly Investment (₹)
+                </label>
+                <input type="number" id="monthly_inv" name="plannedMonthlyInvestment" 
+                       value="{{ form.plannedMonthlyInvestment or '' }}"
+                       class="form-control" min="1000" step="1000" placeholder="e.g., 10,000"
+                       oninput="clearError(this)">
+                <small class="text-muted">Amount you invest every month</small>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="years" class="form-label">
+                  <span class="text-danger">*</span> Investment Period (Years)
+                </label>
+                <input type="number" id="years" name="yearsOfInvestment"
+                       value="{{ form.yearsOfInvestment or '' }}"
+                       class="form-control" min="1" max="50" step="1" placeholder="e.g., 10"
+                       oninput="clearError(this)">
+                <small class="text-muted">How many years will you invest</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="annual_return" class="form-label">
+                  <span class="text-danger">*</span> Annual Return (%)
+                </label>
+                <input type="number" id="annual_return" name="annualReturn"
+                       value="{{ form.annualReturn or '12' }}"
+                       class="form-control" min="0" max="30" step="0.1" placeholder="e.g., 12%"
+                       oninput="clearError(this)">
+                <small class="text-muted">Expected annual return (typical: 10-15%)</small>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="increment_mode" class="form-label">
+                  <span class="text-danger">*</span> Annual Increment Type
+                </label>
+                <select id="increment_mode" name="mode" class="form-select" onchange="toggleIncrementType()">
+                  <option value="percent" {% if form.mode == 'percent' %}selected{% endif %}>By Percentage (%)</option>
+                  <option value="value" {% if form.mode == 'value' %}selected{% endif %}>By Fixed Amount (₹)</option>
+                </select>
+                <small class="text-muted">How much to increase SIP each year</small>
+              </div>
+            </div>
+          </div>
+
+          <div id="percentIncrement" {% if form.mode != 'percent' %}style="display:none;"{% endif %}>
+            <div class="form-group mb-3">
+              <label for="increment_percent" class="form-label">
+                <span class="text-danger">*</span> Annual Increase (%)
+              </label>
+              <input type="number" id="increment_percent" name="incrementValue"
+                     value="{{ form.incrementValue or '10' }}"
+                     class="form-control" min="0" max="100" step="0.1" placeholder="e.g., 10%"
+                     oninput="clearError(this)">
+              <small class="text-muted">Increase SIP by this % each year (e.g., 10% to increase ₹10K to ₹11K)</small>
+            </div>
+          </div>
+
+          <div id="fixedIncrement" {% if form.mode != 'value' %}style="display:none;"{% endif %}>
+            <div class="form-group mb-3">
+              <label for="increment_value" class="form-label">
+                <span class="text-danger">*</span> Annual Increase (₹)
+              </label>
+              <input type="number" id="increment_value" name="incrementValue"
+                     value="{{ form.incrementValue or '' }}"
+                     class="form-control" min="0" step="1000" placeholder="e.g., 1,000"
+                     oninput="clearError(this)">
+              <small class="text-muted">Add this fixed amount to SIP each year</small>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="d-flex gap-2 mt-4">
+          <button type="submit" class="btn btn-primary"><i class="fas fa-calculator"></i> Calculate</button>
+          <button type="reset" class="btn btn-secondary">Clear</button>
+          <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary"><i class="fas fa-home"></i> Back</a>
+        </div>
+      </form>
     </div>
-
-    <table class="table table-striped table-hover">
-      <thead class="table-light">
-        <tr>
-          <th>Year</th>
-          <th>Beginning Value</th>
-          <th>Monthly Investment</th>
-          <th>End Value</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for row in result.schedule %}
-        <tr>
-          <td>{{ row.year }}</td>
-          <td>{{ row.beginning_value }}</td>
-          <td>{{ row.monthly_investment }}</td>
-          <td>{{ row.end_value }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
   </div>
+
+  <!-- Results Section -->
+  {% if result %}
+  <div class="card shadow-sm mt-4">
+    <div class="card-header fw-semibold bg-success text-white">
+      <i class="fas fa-chart-line"></i> Investment Summary
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <div class="bg-light p-3 rounded">
+            <p class="text-muted small mb-1">Final Portfolio Value</p>
+            <h3 class="text-success">{{ result.summary.final_value }}</h3>
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <div class="bg-light p-3 rounded">
+            <p class="text-muted small mb-1">Total Amount Invested</p>
+            <h3 class="text-primary">{{ result.summary.total_invested }}</h3>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mt-2">
+        <div class="col-md-6 mb-3">
+          <div class="bg-light p-3 rounded border-left border-success">
+            <p class="text-muted small mb-1">Total Gain / Profit</p>
+            <h3 class="text-success">{{ result.summary.gain }}</h3>
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <div class="bg-light p-3 rounded">
+            <p class="text-muted small mb-1">Average Annual Return</p>
+            <h3 class="text-info">{{ result.summary.annualReturn }}%</h3>
+          </div>
+        </div>
+      </div>
+
+      <h5 class="mt-4 mb-3">Year-by-Year Breakdown</h5>
+      <div class="table-responsive">
+        <table class="table table-striped table-hover">
+          <thead class="table-light">
+            <tr>
+              <th>Year</th>
+              <th>Monthly SIP</th>
+              <th>Beginning Balance</th>
+              <th>Year End Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in result.schedule %}
+            <tr>
+              <td><strong>{{ row.year }}</strong></td>
+              <td>{{ row.monthly_investment }}</td>
+              <td>{{ row.beginning_value }}</td>
+              <td><strong>{{ row.end_value }}</strong></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
 </div>
-{% endif %}
 
 <script>
-  // Toggle increment input rows based on mode
-  document.getElementById('modeSelect').addEventListener('change', function() {
-    if (this.value === 'percent') {
-      document.getElementById('incrementPercentRow').style.display = '';
-      document.getElementById('incrementValueRow').style.display = 'none';
+function clearError(element) {
+  element.classList.remove('is-invalid');
+}
+
+function setError(element, message) {
+  element.classList.add('is-invalid');
+}
+
+function toggleIncrementType() {
+  const mode = document.getElementById('increment_mode').value;
+  if (mode === 'percent') {
+    document.getElementById('percentIncrement').style.display = '';
+    document.getElementById('fixedIncrement').style.display = 'none';
+  } else {
+    document.getElementById('percentIncrement').style.display = 'none';
+    document.getElementById('fixedIncrement').style.display = '';
+  }
+}
+
+function validateSipForm() {
+  const monthlyInv = document.getElementById('monthly_inv');
+  const years = document.getElementById('years');
+  const annualReturn = document.getElementById('annual_return');
+  const increment = document.getElementById('increment_mode').value === 'percent' 
+                    ? document.getElementById('increment_percent')
+                    : document.getElementById('increment_value');
+  
+  let isValid = true;
+  
+  if (!monthlyInv.value || parseFloat(monthlyInv.value) < 1000) {
+    setError(monthlyInv, 'Please enter monthly investment (minimum ₹1,000)');
+    isValid = false;
+  } else {
+    clearError(monthlyInv);
+  }
+  
+  if (!years.value || parseInt(years.value) < 1 || parseInt(years.value) > 50) {
+    setError(years, 'Please enter valid investment period (1-50 years)');
+    isValid = false;
+  } else {
+    clearError(years);
+  }
+  
+  if (!annualReturn.value || parseFloat(annualReturn.value) < 0) {
+    setError(annualReturn, 'Please enter valid annual return (0-30%)');
+    isValid = false;
+  } else {
+    clearError(annualReturn);
+  }
+  
+  if (!increment.value || parseFloat(increment.value) < 0) {
+    setError(increment, 'Please enter valid increment value');
+    isValid = false;
+  } else {
+    clearError(increment);
+  }
+  
+  return isValid;
+}
+
+function submitSipForm(event) {
+  event.preventDefault();
+  
+  if (!validateSipForm()) {
+    return false;
+  }
+  
+  const formData = {
+    plannedMonthlyInvestment: document.getElementById('monthly_inv').value,
+    yearsOfInvestment: document.getElementById('years').value,
+    annualReturn: document.getElementById('annual_return').value,
+    incrementValue: document.getElementById('increment_mode').value === 'percent' 
+             ? document.getElementById('increment_percent').value
+             : document.getElementById('increment_value').value,
+    mode: document.getElementById('increment_mode').value
+  };
+  
+  fetch("{{ url_for('sip.api_stepup') }}", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(formData)
+  })
+  .then(res => res.json())
+  .then(result => {
+    if (result.success) {
+      console.log("Calculation result:", result);
+      if (result.summary) {
+        alert("Calculation complete! Final Value: " + result.summary.final_value);
+      }
     } else {
-      document.getElementById('incrementPercentRow').style.display = 'none';
-      document.getElementById('incrementValueRow').style.display = '';
+      alert("Error: " + (result.error || "Calculation failed"));
     }
+  })
+  .catch(err => {
+    console.error("API error:", err);
+    alert("Failed to calculate: " + err.message);
   });
+  
+  return false;
+}
 </script>
+
+<style>
+.is-invalid {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.border-left {
+  border-left: 4px solid;
+}
+
+.table-responsive {
+  max-height: 500px;
+  overflow-y: auto;
+}
+</style>
 {% endblock %}

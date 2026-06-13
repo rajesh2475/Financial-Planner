@@ -6,106 +6,59 @@
   <div class="card shadow-sm mb-4">
     <div class="card-header fw-semibold">Rental Yield Calculator</div>
     <div class="card-body">
-      <p><strong>Source Excel File:</strong> Rental Yield Calculator.xlsx</p>
       <p>This calculator is automatically generated from the Excel workbook. Enter your inputs below to calculate results.</p>
       
-      <form id="calcForm" method="POST">
+      <form id="calcForm" method="POST" novalidate>
         <fieldset>
           <legend class="mb-3">Input Values</legend>
 
         <div class="form-group mb-3">
-          <label for="input_0" class="form-label">TAX RATE</label>
-          <input type="number" class="form-control" id="input_0" name="input_0" placeholder="Enter tax rate">
+          <label for="input_0" class="form-label">Annual Rental Income (INR) <span class="text-danger">*</span></label>
+          <input type="number" class="form-control" id="input_0" name="input_0" placeholder="Total rent received per year" required aria-required="true">
+          <small class="text-muted">Total rent you receive in a year from the property.</small>
         </div>
+
         <div class="form-group mb-3">
-          <label for="input_1" class="form-label">RENTAL INCOME PER YEAR</label>
-          <input type="number" class="form-control" id="input_1" name="input_1" placeholder="Enter rental income per year">
+          <label for="input_1" class="form-label">Property Value (INR) <span class="text-danger">*</span></label>
+          <input type="number" class="form-control" id="input_1" name="input_1" placeholder="Current market value of the property" required aria-required="true">
+          <small class="text-muted">Used to compute rental yield: (annual rent / property value) * 100</small>
         </div>
+
         <div class="form-group mb-3">
-          <label for="input_2" class="form-label">NET TAXABLE INCOME</label>
-          <input type="number" class="form-control" id="input_2" name="input_2" placeholder="Enter net taxable income">
+          <label for="input_4" class="form-label">Tax Rate (%)</label>
+          <input type="number" class="form-control" id="input_4" name="input_4" placeholder="Optional: tax rate on rental income" step="0.01">
         </div>
-        <div class="form-group mb-3">
-          <label for="input_3" class="form-label">POST TAX RENTAL INCOME</label>
-          <input type="number" class="form-control" id="input_3" name="input_3" placeholder="Enter post tax rental income">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_4" class="form-label">STAMP DUTY RATE</label>
-          <input type="number" class="form-control" id="input_4" name="input_4" placeholder="Enter stamp duty rate">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_5" class="form-label">REGISTRATION RATE</label>
-          <input type="number" class="form-control" id="input_5" name="input_5" placeholder="Enter registration rate">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_6" class="form-label">TRANSFER DUTY RATE</label>
-          <input type="number" class="form-control" id="input_6" name="input_6" placeholder="Enter transfer duty rate">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_7" class="form-label">PROPERTY APPRECIATION RATE</label>
-          <input type="number" class="form-control" id="input_7" name="input_7" placeholder="Enter property appreciation rate">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_8" class="form-label">EXPECTED GROWTH RATE OF HOUSE</label>
-          <input type="number" class="form-control" id="input_8" name="input_8" placeholder="Enter expected growth rate of house">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_9" class="form-label">AGE OF THE HOUSE</label>
-          <input type="number" class="form-control" id="input_9" name="input_9" placeholder="Enter age of the house">
-        </div>
+
         </fieldset>
-        
-        <button type="submit" class="btn btn-primary">Calculate</button>
-        <button type="reset" class="btn btn-secondary">Clear</button>
-        <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary">Back to Home</a>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">Calculate</button>
+          <button type="reset" class="btn btn-secondary">Clear</button>
+          <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary">Back to Home</a>
+        </div>
       </form>
+
+      <div id="rentError" style="display:none;" class="alert alert-danger mt-3"></div>
+
+      <div id="resultsCard" class="card shadow-sm mt-4" style="display:none;">
+        <div class="card-header fw-semibold">Results</div>
+        <div class="card-body">
+          <table class="table table-bordered">
+            <tbody>
+            <tr>
+              <th>Rental Yield (%)</th>
+              <td id="result_rental_yield">-</td>
+            </tr>
+            <tr>
+              <th>Post-tax Rental Income (if tax rate given)</th>
+              <td id="result_post_tax_income">-</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
-
-  {% if result %}
-  <div class="card shadow-sm">
-    <div class="card-header fw-semibold">Results</div>
-    <div class="card-body">
-      <table class="table table-bordered">
-        <tbody>
-
-        <tr>
-          <th>GROWTH IN PROP TAX</th>
-          <td id="result_0">-</td>
-        </tr>
-        <tr>
-          <th>TAX RATE</th>
-          <td id="result_1">-</td>
-        </tr>
-        <tr>
-          <th>ANNUAL TAX</th>
-          <td id="result_2">-</td>
-        </tr>
-        <tr>
-          <th>NET TAXABLE INCOME</th>
-          <td id="result_3">-</td>
-        </tr>
-        <tr>
-          <th>NET TAX PAYABLE</th>
-          <td id="result_4">-</td>
-        </tr>
-        <tr>
-          <th>POST TAX RENTAL INCOME</th>
-          <td id="result_5">-</td>
-        </tr>
-        <tr>
-          <th>TOTAL STAMP DUTY</th>
-          <td id="result_6">-</td>
-        </tr>
-        <tr>
-          <th>TOTAL COST OF THE PROPERTY</th>
-          <td id="result_7">-</td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  {% endif %}
 
   {% if error %}
   <div class="alert alert-danger">{{ error }}</div>
@@ -113,28 +66,25 @@
 </div>
 
 <script>
-  document.getElementById("calcForm").addEventListener("submit", function(e) {
+  document.getElementById('calcForm').addEventListener('submit', function(e){
     e.preventDefault();
-    const formData = new FormData(this);
-    const data = Object.fromEntries(formData);
-    fetch("{{ url_for('calculators.rental_yield_calculator_api') }}", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(data)
-    })
-    .then(res => res.json())
-    .then(result => {
-      if (result.success) {
-        console.log("Calculation result:", result);
-        alert("Calculation submitted. Check console for details.");
-      } else {
-        alert("Error: " + (result.error || "Calculation failed"));
-      }
-    })
-    .catch(err => {
-      console.error("API error:", err);
-      alert("Failed to calculate: " + err.message);
-    });
+    const errEl = document.getElementById('rentError'); errEl.style.display='none'; errEl.textContent='';
+    const fd = new FormData(this); const data = Object.fromEntries(fd.entries());
+    Object.keys(data).forEach(k=>{ const n=parseFloat(data[k]); if(!isNaN(n)) data[k]=n; });
+    if(!data.input_0 || !data.input_1) { errEl.style.display='block'; errEl.textContent='Please enter both annual rent and property value.'; return false; }
+
+    fetch("{{ url_for('calculators.rental_yield_calculator_api') }}", { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) })
+    .then(r=>r.json()).then(resp=>{
+      if(resp && resp.success){
+        const res = resp.result || resp;
+        if(res.rental_yield_pct !== undefined) document.getElementById('result_rental_yield').innerText = res.rental_yield_pct + '%';
+        // post-tax income if tax rate provided
+        if(data.input_4){ const post = (data.input_0 * (1 - (parseFloat(data.input_4)/100))); document.getElementById('result_post_tax_income').innerText = new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR'}).format(post); }
+        else document.getElementById('result_post_tax_income').innerText = '-';
+        document.getElementById('resultsCard').style.display='block';
+      } else { errEl.style.display='block'; errEl.textContent = (resp && resp.error) ? resp.error : 'Calculation failed'; }
+    }).catch(err=>{ console.error('API error',err); errEl.style.display='block'; errEl.textContent = 'Failed to calculate: '+(err.message||err); });
   });
+</script>
 </script>
 {% endblock %}

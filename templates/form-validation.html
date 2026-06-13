@@ -1,0 +1,192 @@
+<!-- Reusable Form Validation and Error Handling for Calculators -->
+<!-- Include this at the bottom of calculator templates before closing </div> -->
+
+<style>
+.is-invalid {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.form-label .required-asterisk {
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.mandatory-indicator {
+  color: #dc3545;
+  font-size: 1.1em;
+  vertical-align: middle;
+}
+
+.alert-danger {
+  border-left: 4px solid #dc3545;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+</style>
+
+<script>
+/**
+ * Clear error state from form field
+ * @param {HTMLElement} element - Form input element
+ */
+function clearError(element) {
+  if (element) {
+    element.classList.remove('is-invalid');
+    // Also try to remove aria-invalid if Bootstrap uses it
+    element.removeAttribute('aria-invalid');
+  }
+}
+
+/**
+ * Set error state and display error message
+ * @param {HTMLElement} element - Form input element
+ * @param {string} message - Error message to display
+ */
+function setError(element, message) {
+  if (!element) return;
+  
+  element.classList.add('is-invalid');
+  element.setAttribute('aria-invalid', 'true');
+  
+  // Find or create error alert
+  const form = element.closest('form');
+  if (!form) return;
+  
+  let alert = form.querySelector('.alert-danger');
+  if (!alert) {
+    alert = document.createElement('div');
+    alert.className = 'alert alert-danger alert-dismissible fade show mt-3';
+    alert.setAttribute('role', 'alert');
+    alert.innerHTML = `<i class="fas fa-exclamation-circle"></i> <strong>Error:</strong> <span id="errorMsg"></span>
+                       <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>`;
+    form.parentElement.insertBefore(alert, form);
+  }
+  
+  alert.querySelector('#errorMsg').textContent = message;
+  alert.style.display = 'block';
+  
+  // Auto-scroll to error
+  alert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+/**
+ * Validate that a field is not empty
+ * @param {HTMLElement} element - Form input element
+ * @param {string} fieldName - Display name of field
+ * @returns {boolean} - True if valid
+ */
+function validateRequired(element, fieldName) {
+  const value = (element.value || '').trim();
+  if (!value) {
+    setError(element, `${fieldName} is required. Please enter a value.`);
+    return false;
+  }
+  clearError(element);
+  return true;
+}
+
+/**
+ * Validate that a field is a valid number
+ * @param {HTMLElement} element - Form input element
+ * @param {string} fieldName - Display name of field
+ * @param {number} min - Minimum allowed value (optional)
+ * @param {number} max - Maximum allowed value (optional)
+ * @returns {boolean} - True if valid
+ */
+function validateNumber(element, fieldName, min = null, max = null) {
+  const value = parseFloat(element.value);
+  
+  if (isNaN(value)) {
+    setError(element, `${fieldName} must be a valid number.`);
+    return false;
+  }
+  
+  if (min !== null && value < min) {
+    setError(element, `${fieldName} must be at least ${min}.`);
+    return false;
+  }
+  
+  if (max !== null && value > max) {
+    setError(element, `${fieldName} cannot exceed ${max}.`);
+    return false;
+  }
+  
+  clearError(element);
+  return true;
+}
+
+/**
+ * Validate that a date field has a value
+ * @param {HTMLElement} element - Date input element
+ * @param {string} fieldName - Display name of field
+ * @returns {boolean} - True if valid
+ */
+function validateDate(element, fieldName) {
+  const value = (element.value || '').trim();
+  if (!value) {
+    setError(element, `${fieldName} is required. Please select a date.`);
+    return false;
+  }
+  clearError(element);
+  return true;
+}
+
+/**
+ * Show success message
+ * @param {string} message - Success message
+ */
+function showSuccess(message) {
+  const successAlert = document.createElement('div');
+  successAlert.className = 'alert alert-success alert-dismissible fade show';
+  successAlert.setAttribute('role', 'alert');
+  successAlert.innerHTML = `<i class="fas fa-check-circle"></i> <strong>Success!</strong> ${message}
+                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+  
+  const form = document.getElementById('calcForm');
+  if (form) {
+    form.parentElement.insertBefore(successAlert, form);
+  }
+  
+  // Auto-dismiss after 5 seconds
+  setTimeout(() => {
+    successAlert.remove();
+  }, 5000);
+}
+
+/**
+ * Format currency values for display
+ * @param {number} value - Number to format
+ * @returns {string} - Formatted currency string
+ */
+function formatCurrency(value) {
+  if (isNaN(value)) return '₹ 0';
+  return '₹ ' + Math.round(value).toLocaleString('en-IN');
+}
+
+/**
+ * Format number with thousand separators
+ * @param {number} value - Number to format
+ * @returns {string} - Formatted number
+ */
+function formatNumber(value) {
+  if (isNaN(value)) return '0';
+  return Math.round(value).toLocaleString('en-IN');
+}
+</script>

@@ -6,7 +6,6 @@
   <div class="card shadow-sm mb-4">
     <div class="card-header fw-semibold">Retire Calculator</div>
     <div class="card-body">
-      <p><strong>Source Excel File:</strong> retire calculator.xlsx</p>
       <p>This calculator is automatically generated from the Excel workbook. Enter your inputs below to calculate results.</p>
       
       <form id="calcForm" method="POST">
@@ -29,18 +28,7 @@
           <label for="input_3" class="form-label">INFLATION</label>
           <input type="number" class="form-control" id="input_3" name="input_3" placeholder="Enter inflation">
         </div>
-        <div class="form-group mb-3">
-          <label for="input_4" class="form-label">MONTHLY EXPENSE AT AGE 55</label>
-          <input type="number" class="form-control" id="input_4" name="input_4" placeholder="Enter monthly expense at age 55">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_5" class="form-label">EXPECTED RETURN ON CORPUS</label>
-          <input type="number" class="form-control" id="input_5" name="input_5" placeholder="Enter expected return on corpus">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_6" class="form-label">EXPECTED RETURN ON INVESTMENT</label>
-          <input type="number" class="form-control" id="input_6" name="input_6" placeholder="Enter expected return on investment">
-        </div>
+        <!-- Removed: MONTHLY EXPENSE AT AGE 55, EXPECTED RETURN ON CORPUS, EXPECTED RETURN ON INVESTMENT as user inputs -->
         </fieldset>
         
         <button type="submit" class="btn btn-primary">Calculate</button>
@@ -50,34 +38,36 @@
     </div>
   </div>
 
-  {% if result %}
-  <div class="card shadow-sm">
+  <div id="resultsCard" class="card shadow-sm" style="display:none;">
     <div class="card-header fw-semibold">Results</div>
     <div class="card-body">
       <table class="table table-bordered">
         <tbody>
 
         <tr>
-          <th>RETIRMENT CORPUS CALCULATION</th>
-          <td id="result_0">-</td>
+          <th>MONTHLY EXPENSE AT RETIREMENT AGE</th>
+          <td id="result_expense_at_retirement">-</td>
         </tr>
         <tr>
-          <th>EXPECTED RETURN ON CORPUS</th>
-          <td id="result_1">-</td>
+          <th>EXPECTED RETURN ON CORPUS (%)</th>
+          <td id="result_return_on_corpus">-</td>
+        </tr>
+        <tr>
+          <th>EXPECTED RETURN ON INVESTMENT (%)</th>
+          <td id="result_return_on_investment">-</td>
         </tr>
         <tr>
           <th>CORPUS REQUIRED</th>
-          <td id="result_2">-</td>
+          <td id="result_corpus_required">-</td>
         </tr>
         <tr>
           <th>SIP TO BE INVESTED</th>
-          <td id="result_3">-</td>
+          <td id="result_sip">-</td>
         </tr>
         </tbody>
       </table>
     </div>
   </div>
-  {% endif %}
 
   {% if error %}
   <div class="alert alert-danger">{{ error }}</div>
@@ -95,12 +85,21 @@
       body: JSON.stringify(data)
     })
     .then(res => res.json())
-    .then(result => {
-      if (result.success) {
-        console.log("Calculation result:", result);
-        alert("Calculation submitted. Check console for details.");
+    .then(resp => {
+      if (resp.success) {
+        const data = resp.result || resp;
+        console.log("Calculation result:", resp);
+        // populate results in the table
+        document.getElementById('result_expense_at_retirement').innerText = data.expense_at_retirement || data.expense_at_retirement || '-';
+        document.getElementById('result_return_on_corpus').innerText = data.return_on_corpus || '-';
+        document.getElementById('result_return_on_investment').innerText = data.return_on_investment || '-';
+        document.getElementById('result_corpus_required').innerText = data.corpus_required || '-';
+        document.getElementById('result_sip').innerText = data.sip || '-';
+        // show the results card
+        document.getElementById('resultsCard').style.display = 'block';
       } else {
-        alert("Error: " + (result.error || "Calculation failed"));
+        // show error message on page
+        alert("Error: " + (resp.error || "Calculation failed"));
       }
     })
     .catch(err => {

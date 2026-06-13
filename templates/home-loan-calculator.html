@@ -6,98 +6,261 @@
   <div class="card shadow-sm mb-4">
     <div class="card-header fw-semibold">Home Loan Calculator</div>
     <div class="card-body">
-      <p><strong>Source Excel File:</strong> Home Loan Calculator.xlsx</p>
-      <p>This calculator is automatically generated from the Excel workbook. Enter your inputs below to calculate results.</p>
+      <p>Enter the basic loan details below to calculate your EMI and total repayment amount.</p>
       
-      <form id="calcForm" method="POST">
+      {% if error %}
+      <div class="alert alert-danger alert-dismissible fade show" role="alert" id="errorAlert">
+        <i class="fas fa-exclamation-circle"></i> <strong>Error:</strong> {{ error }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      {% endif %}
+      
+      <form id="calcForm" method="POST" onsubmit="return validateForm(event)">
         <fieldset>
-          <legend class="mb-3">Input Values</legend>
+          <legend class="mb-3">Loan Details <span class="text-danger">*</span> = Required</legend>
 
-        <div class="form-group mb-3">
-          <label for="input_0" class="form-label">LOAN AMOUNT</label>
-          <input type="number" class="form-control" id="input_0" name="input_0" placeholder="Enter loan amount">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_1" class="form-label">INTEREST RATE</label>
-          <input type="number" class="form-control" id="input_1" name="input_1" placeholder="Enter interest rate">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_2" class="form-label">TENURE in years</label>
-          <input type="number" class="form-control" id="input_2" name="input_2" placeholder="Enter tenure in years">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_3" class="form-label">EMI</label>
-          <input type="number" class="form-control" id="input_3" name="input_3" placeholder="Enter emi">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_4" class="form-label">TOTAL AMOUNT TO BE PAID</label>
-          <input type="number" class="form-control" id="input_4" name="input_4" placeholder="Enter total amount to be paid">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_5" class="form-label">SCENARIO POST CHANGES IN RATES</label>
-          <input type="number" class="form-control" id="input_5" name="input_5" placeholder="Enter scenario post changes in rates">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_6" class="form-label">RATE CHANGE</label>
-          <input type="number" class="form-control" id="input_6" name="input_6" placeholder="Enter rate change">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_7" class="form-label">NO OF EMIs PAID</label>
-          <input type="number" class="form-control" id="input_7" name="input_7" placeholder="Enter no of emis paid">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_8" class="form-label">FIXED EMI</label>
-          <input type="number" class="form-control" id="input_8" name="input_8" placeholder="Enter fixed emi">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_9" class="form-label">CHANGE IN INTEREST RATE</label>
-          <input type="number" class="form-control" id="input_9" name="input_9" placeholder="Enter change in interest rate">
-        </div>
+          <!-- Mandatory Fields -->
+          <div class="form-group mb-3">
+            <label for="loan_amount" class="form-label">
+              <span class="text-danger">*</span> Loan Amount (₹)
+            </label>
+            <input type="number" class="form-control" id="loan_amount" name="loan_amount" 
+                   placeholder="Enter loan amount" step="100000" min="0" oninput="clearError(this); calculateAuto()">
+            <small class="text-muted">e.g., 50,00,000</small>
+          </div>
+
+          <div class="form-group mb-3">
+            <label for="interest_rate" class="form-label">
+              <span class="text-danger">*</span> Interest Rate (% p.a.)
+            </label>
+            <input type="number" class="form-control" id="interest_rate" name="interest_rate"
+                   placeholder="Enter interest rate" step="0.01" min="0" max="20" oninput="clearError(this); calculateAuto()">
+            <small class="text-muted">e.g., 7.5</small>
+          </div>
+
+          <div class="form-group mb-3">
+            <label for="tenure_years" class="form-label">
+              <span class="text-danger">*</span> Loan Tenure (Years)
+            </label>
+            <input type="number" class="form-control" id="tenure_years" name="tenure_years"
+                   placeholder="Enter tenure in years" step="1" min="1" max="30" oninput="clearError(this); calculateAuto()">
+            <small class="text-muted">e.g., 20</small>
+          </div>
+
+          <div class="form-group mb-3">
+            <label for="emi_start_date" class="form-label">
+              <span class="text-danger">*</span> First EMI Date
+            </label>
+            <input type="date" class="form-control" id="emi_start_date" name="emi_start_date" oninput="clearError(this)">
+            <small class="text-muted">Date when your first EMI starts</small>
+          </div>
+
+          <!-- Optional Advanced Fields -->
+          <div class="accordion mt-4 mb-3" id="advancedOptions">
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#advancedCollapse">
+                  <i class="fas fa-sliders-h"></i> Advanced Options (Optional)
+                </button>
+              </h2>
+              <div id="advancedCollapse" class="accordion-collapse collapse" data-bs-parent="#advancedOptions">
+                <div class="accordion-body bg-light">
+                  <div class="form-group mb-3">
+                    <label for="rate_change" class="form-label">Rate Change (%)</label>
+                    <input type="number" class="form-control" id="rate_change" name="rate_change"
+                           placeholder="Change in interest rate" step="0.01" oninput="calculateAuto()">
+                    <small class="text-muted">If rate changes after some months</small>
+                  </div>
+                  <div class="form-group mb-3">
+                    <label for="emis_paid" class="form-label">Number of EMIs Already Paid</label>
+                    <input type="number" class="form-control" id="emis_paid" name="emis_paid"
+                           placeholder="0" step="1" min="0" oninput="calculateAuto()">
+                    <small class="text-muted">For refinancing scenarios</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </fieldset>
         
-        <button type="submit" class="btn btn-primary">Calculate</button>
-        <button type="reset" class="btn btn-secondary">Clear</button>
-        <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary">Back to Home</a>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary"><i class="fas fa-calculator"></i> Calculate</button>
+          <button type="reset" class="btn btn-secondary" onclick="document.getElementById('resultsSection').style.display='none';">Clear</button>
+          <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary"><i class="fas fa-home"></i> Back</a>
+        </div>
       </form>
     </div>
   </div>
 
-  {% if result %}
-  <div class="card shadow-sm">
-    <div class="card-header fw-semibold">Results</div>
+  <!-- Results Section -->
+  <div id="resultsSection" style="display: {% if result %}block{% else %}none{% endif %}" class="card shadow-sm mt-4">
+    <div class="card-header fw-semibold bg-success text-white">
+      <i class="fas fa-check-circle"></i> Calculation Results
+    </div>
     <div class="card-body">
-      <table class="table table-bordered">
-        <tbody>
-
-        <tr>
-          <th>EMI</th>
-          <td id="result_0">-</td>
-        </tr>
-        <tr>
-          <th>TOTAL AMOUNT TO BE PAID</th>
-          <td id="result_1">-</td>
-        </tr>
-        <tr>
-          <th>NO OF EMIs PAID</th>
-          <td id="result_2">-</td>
-        </tr>
-        <tr>
-          <th>FIXED EMI</th>
-          <td id="result_3">-</td>
-        </tr>
-        <tr>
-          <th>=IF(D27= "FIXED EMI", "NEW TENURE LEFT", "CHANGED EMI")</th>
-          <td id="result_4">-</td>
-        </tr>
-        <tr>
-          <th>CHANGE IN TOTAL AMOUNT TO BE PAID</th>
-          <td id="result_5">-</td>
-        </tr>
-        </tbody>
-      </table>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <div class="bg-light p-3 rounded">
+            <p class="text-muted small mb-1">Monthly EMI</p>
+            <h3 class="text-primary" id="result_emi">₹ -</h3>
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <div class="bg-light p-3 rounded">
+            <p class="text-muted small mb-1">Total Amount to be Paid</p>
+            <h3 class="text-success" id="result_total">₹ -</h3>
+          </div>
+        </div>
+      </div>
+      
+      <div class="row mt-2">
+        <div class="col-md-6 mb-3">
+          <div class="bg-light p-3 rounded">
+            <p class="text-muted small mb-1">Total Interest Payable</p>
+            <h3 class="text-warning" id="result_interest">₹ -</h3>
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <div class="bg-light p-3 rounded">
+            <p class="text-muted small mb-1">Total EMIs</p>
+            <h3 class="text-info" id="result_tenure">- EMIs</h3>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-  {% endif %}
+</div>
+
+<!-- Reusable Validation & Calculation Script -->
+<script>
+function clearError(element) {
+  element.classList.remove('is-invalid');
+  const errorAlert = document.getElementById('errorAlert');
+  if (errorAlert) {
+    errorAlert.style.display = 'none';
+  }
+}
+
+function setError(element, message) {
+  element.classList.add('is-invalid');
+  const form = element.closest('form');
+  let alert = form.querySelector('.alert-danger');
+  if (!alert) {
+    alert = document.createElement('div');
+    alert.className = 'alert alert-danger alert-dismissible fade show mt-3';
+    alert.innerHTML = `<i class="fas fa-exclamation-circle"></i> <strong>Error:</strong> <span id="errorMsg"></span>
+                       <button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+    form.parentElement.insertBefore(alert, form);
+  }
+  alert.querySelector('#errorMsg').textContent = message;
+  alert.style.display = 'block';
+}
+
+function validateForm(event) {
+  const form = event.target;
+  const loanAmount = document.getElementById('loan_amount');
+  const interestRate = document.getElementById('interest_rate');
+  const tenureYears = document.getElementById('tenure_years');
+  const emiDate = document.getElementById('emi_start_date');
+  
+  let isValid = true;
+  const errors = [];
+  
+  // Validate required fields
+  if (!loanAmount.value || parseFloat(loanAmount.value) <= 0) {
+    setError(loanAmount, 'Loan amount is required and must be greater than 0');
+    isValid = false;
+  }
+  
+  if (!interestRate.value || parseFloat(interestRate.value) < 0) {
+    setError(interestRate, 'Interest rate is required and cannot be negative');
+    isValid = false;
+  }
+  
+  if (!tenureYears.value || parseInt(tenureYears.value) <= 0) {
+    setError(tenureYears, 'Tenure is required and must be greater than 0 years');
+    isValid = false;
+  }
+  
+  if (!emiDate.value) {
+    setError(emiDate, 'First EMI date is required');
+    isValid = false;
+  }
+  
+  if (!isValid) {
+    event.preventDefault();
+    return false;
+  }
+  
+  // Form is valid, proceed with calculation
+  calculateEMI();
+  event.preventDefault();
+  return false;
+}
+
+function calculateAuto() {
+  const loanAmount = parseFloat(document.getElementById('loan_amount').value) || 0;
+  const interestRate = parseFloat(document.getElementById('interest_rate').value) || 0;
+  const tenureYears = parseInt(document.getElementById('tenure_years').value) || 0;
+  
+  // Only auto-calculate if all required fields are filled
+  if (loanAmount > 0 && interestRate >= 0 && tenureYears > 0) {
+    calculateEMI();
+  }
+}
+
+function calculateEMI() {
+  const loanAmount = parseFloat(document.getElementById('loan_amount').value) || 0;
+  const interestRate = parseFloat(document.getElementById('interest_rate').value) || 0;
+  const tenureYears = parseInt(document.getElementById('tenure_years').value) || 0;
+  
+  if (loanAmount <= 0 || tenureYears <= 0) return;
+  
+  // EMI Calculation Formula
+  const monthlyRate = interestRate / (12 * 100);
+  const numberOfEMIs = tenureYears * 12;
+  
+  let emi = 0;
+  if (monthlyRate > 0) {
+    emi = (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, numberOfEMIs)) / 
+          (Math.pow(1 + monthlyRate, numberOfEMIs) - 1);
+  } else {
+    emi = loanAmount / numberOfEMIs;
+  }
+  
+  const totalAmount = emi * numberOfEMIs;
+  const totalInterest = totalAmount - loanAmount;
+  
+  // Display results
+  document.getElementById('result_emi').textContent = '₹ ' + Math.round(emi).toLocaleString('en-IN');
+  document.getElementById('result_total').textContent = '₹ ' + Math.round(totalAmount).toLocaleString('en-IN');
+  document.getElementById('result_interest').textContent = '₹ ' + Math.round(totalInterest).toLocaleString('en-IN');
+  document.getElementById('result_tenure').textContent = numberOfEMIs + ' EMIs';
+  
+  document.getElementById('resultsSection').style.display = 'block';
+}
+
+// Auto-calculate on form load if data exists
+document.addEventListener('DOMContentLoaded', function() {
+  calculateAuto();
+});
+</script>
+
+<style>
+.is-invalid {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.alert-danger {
+  border-left: 4px solid #dc3545;
+}
+
+#resultsSection .card {
+  border-top: 3px solid #198754;
+}
+</style>
+
 
   {% if error %}
   <div class="alert alert-danger">{{ error }}</div>
@@ -117,15 +280,26 @@
     .then(res => res.json())
     .then(result => {
       if (result.success) {
-        console.log("Calculation result:", result);
-        alert("Calculation submitted. Check console for details.");
+        const r = result.result || {};
+        // populate values using API response (fallback to local calculation where needed)
+        if (r.emi !== undefined) document.getElementById('result_emi').textContent = '₹ ' + Math.round(r.emi).toLocaleString('en-IN');
+        if (r.total_payment !== undefined) document.getElementById('result_total').textContent = '₹ ' + Math.round(r.total_payment).toLocaleString('en-IN');
+        // compute interest and tenure display locally
+        const principal = parseFloat(document.getElementById('loan_amount').value) || 0;
+        const total = r.total_payment !== undefined ? parseFloat(r.total_payment) : 0;
+        const tenureYears = parseInt(document.getElementById('tenure_years').value) || 0;
+        const numberOfEMIs = tenureYears * 12;
+        if (total && principal) document.getElementById('result_interest').textContent = '₹ ' + Math.round(total - principal).toLocaleString('en-IN');
+        if (numberOfEMIs) document.getElementById('result_tenure').textContent = numberOfEMIs + ' EMIs';
+        document.getElementById('resultsSection').style.display = 'block';
       } else {
-        alert("Error: " + (result.error || "Calculation failed"));
+        const err = result.error || 'Calculation failed';
+        alert('Error: ' + err);
       }
     })
     .catch(err => {
-      console.error("API error:", err);
-      alert("Failed to calculate: " + err.message);
+      console.error('API error:', err);
+      alert('Failed to calculate: ' + err.message);
     });
   });
 </script>

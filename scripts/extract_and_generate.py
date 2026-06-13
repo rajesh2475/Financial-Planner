@@ -112,7 +112,6 @@ def generate_calculator_html(file_name: str, metadata: Dict[str, Any]) -> str:
     template += '  <div class="card shadow-sm mb-4">\n'
     template += '    <div class="card-header fw-semibold">' + title + '</div>\n'
     template += '    <div class="card-body">\n'
-    template += '      <p><strong>Source Excel File:</strong> ' + file_name + '</p>\n'
     template += '      <p>This calculator is automatically generated from the Excel workbook. Enter your inputs below to calculate results.</p>\n'
     template += '      \n'
     template += '      <form id="calcForm" method="POST">\n'

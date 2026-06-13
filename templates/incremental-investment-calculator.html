@@ -6,103 +6,284 @@
   <div class="card shadow-sm mb-4">
     <div class="card-header fw-semibold">Incremental Investment Calculator</div>
     <div class="card-body">
-      <p><strong>Source Excel File:</strong> Incremental Investment Calculator.xlsx</p>
-      <p>This calculator is automatically generated from the Excel workbook. Enter your inputs below to calculate results.</p>
+      <p>Calculate growth of your investments with annual increments to beat inflation.</p>
       
-      <form id="calcForm" method="POST">
-        <fieldset>
-          <legend class="mb-3">Input Values</legend>
+      {% if error %}
+      <div class="alert alert-danger alert-dismissible fade show">
+        <i class="fas fa-exclamation-circle"></i> {{ error }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      {% endif %}
 
-        <div class="form-group mb-3">
-          <label for="input_0" class="form-label">INCREMENTAL SIP INVESTMENT CALCULATOR WITH "X%"</label>
-          <input type="number" class="form-control" id="input_0" name="input_0" placeholder="Enter incremental sip investment calculator with "x%"">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_1" class="form-label">INCREMENTAL SIP INVESTMENT CALCULATOR WITH "X" VALUE</label>
-          <input type="number" class="form-control" id="input_1" name="input_1" placeholder="Enter incremental sip investment calculator with "x" value">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_2" class="form-label">PLANNED MONTHLY INVESTMENT</label>
-          <input type="number" class="form-control" id="input_2" name="input_2" placeholder="Enter planned monthly investment">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_3" class="form-label">NUMBER OF YEARS OF INVESTMENT</label>
-          <input type="number" class="form-control" id="input_3" name="input_3" placeholder="Enter number of years of investment">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_4" class="form-label">RETURN EXPECTED</label>
-          <input type="number" class="form-control" id="input_4" name="input_4" placeholder="Enter return expected">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_5" class="form-label">EXPECTED ANNUAL INCREMENTAL RATE FOR INVESTMENT</label>
-          <input type="number" class="form-control" id="input_5" name="input_5" placeholder="Enter expected annual incremental rate for investment">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_6" class="form-label">MONTHLY INVESTMENT</label>
-          <input type="number" class="form-control" id="input_6" name="input_6" placeholder="Enter monthly investment">
-        </div>
+      <form id="investForm" onsubmit="return submitInvestForm(event)">
+        <fieldset>
+          <legend class="mb-3">Investment Details <span class="text-danger">*</span></legend>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="monthly_inv" class="form-label">
+                  <span class="text-danger">*</span> Monthly Investment (₹)
+                </label>
+                <input type="number" id="monthly_inv" name="input_2" 
+                       value="{{ form.input_2 or '' }}"
+                       class="form-control" min="1000" step="1000" placeholder="e.g., 10,000"
+                       oninput="clearError(this)">
+                <small class="text-muted">Amount you invest every month</small>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="years" class="form-label">
+                  <span class="text-danger">*</span> Investment Period (Years)
+                </label>
+                <input type="number" id="years" name="input_3"
+                       value="{{ form.input_3 or '' }}"
+                       class="form-control" min="1" max="50" step="1" placeholder="e.g., 10"
+                       oninput="clearError(this)">
+                <small class="text-muted">How many years will you invest</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="annual_return" class="form-label">
+                  <span class="text-danger">*</span> Annual Return (%)
+                </label>
+                <input type="number" id="annual_return" name="input_4"
+                       value="{{ form.input_4 or '12' }}"
+                       class="form-control" min="0" max="30" step="0.1" placeholder="e.g., 12%"
+                       oninput="clearError(this)">
+                <small class="text-muted">Expected annual return (typical: 10-15%)</small>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="increment_mode" class="form-label">
+                  <span class="text-danger">*</span> Annual Increment Type
+                </label>
+                <select id="increment_mode" name="mode" class="form-select" onchange="toggleIncrementType()">
+                  <option value="percent" {% if form.mode == 'percent' %}selected{% endif %}>By Percentage (%)</option>
+                  <option value="value" {% if form.mode == 'value' %}selected{% endif %}>By Fixed Amount (₹)</option>
+                </select>
+                <small class="text-muted">How much to increase investment each year</small>
+              </div>
+            </div>
+          </div>
+
+          <div id="percentIncrement" {% if form.mode != 'percent' %}style="display:none;"{% endif %}>
+            <div class="form-group mb-3">
+              <label for="increment_percent" class="form-label">
+                <span class="text-danger">*</span> Annual Increase (%)
+              </label>
+              <input type="number" id="increment_percent" name="input_5"
+                     value="{{ form.input_5 or '10' }}"
+                     class="form-control" min="0" max="100" step="0.1" placeholder="e.g., 10%"
+                     oninput="clearError(this)">
+              <small class="text-muted">Increase investment by this % each year</small>
+            </div>
+          </div>
+
+          <div id="fixedIncrement" {% if form.mode != 'value' %}style="display:none;"{% endif %}>
+            <div class="form-group mb-3">
+              <label for="increment_value" class="form-label">
+                <span class="text-danger">*</span> Annual Increase (₹)
+              </label>
+              <input type="number" id="increment_value" name="input_5"
+                     value="{{ form.input_5 or '' }}"
+                     class="form-control" min="0" step="1000" placeholder="e.g., 1,000"
+                     oninput="clearError(this)">
+              <small class="text-muted">Add this fixed amount to investment each year</small>
+            </div>
+          </div>
         </fieldset>
-        
-        <button type="submit" class="btn btn-primary">Calculate</button>
-        <button type="reset" class="btn btn-secondary">Clear</button>
-        <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary">Back to Home</a>
+
+        <div class="d-flex gap-2 mt-4">
+          <button type="submit" class="btn btn-primary"><i class="fas fa-calculator"></i> Calculate</button>
+          <button type="reset" class="btn btn-secondary">Clear</button>
+          <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary"><i class="fas fa-home"></i> Back</a>
+        </div>
       </form>
     </div>
   </div>
 
+  <!-- Results Section -->
   {% if result %}
-  <div class="card shadow-sm">
-    <div class="card-header fw-semibold">Results</div>
+  <div class="card shadow-sm mt-4">
+    <div class="card-header fw-semibold bg-success text-white">
+      <i class="fas fa-chart-line"></i> Investment Summary
+    </div>
     <div class="card-body">
-      <table class="table table-bordered">
-        <tbody>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <div class="bg-light p-3 rounded">
+            <p class="text-muted small mb-1">Final Portfolio Value</p>
+            <h3 class="text-success">{{ result.summary.final_value }}</h3>
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <div class="bg-light p-3 rounded">
+            <p class="text-muted small mb-1">Total Amount Invested</p>
+            <h3 class="text-primary">{{ result.summary.total_invested }}</h3>
+          </div>
+        </div>
+      </div>
 
-        <tr>
-          <th>INCREMENTAL SIP INVESTMENT CALCULATOR WITH "X%"</th>
-          <td id="result_0">-</td>
-        </tr>
-        <tr>
-          <th>INCREMENTAL SIP INVESTMENT CALCULATOR WITH "X" VALUE</th>
-          <td id="result_1">-</td>
-        </tr>
-        <tr>
-          <th>VALUE AT THE END OF THE YEAR</th>
-          <td id="result_2">-</td>
-        </tr>
-        </tbody>
-      </table>
+      <div class="row mt-2">
+        <div class="col-md-6 mb-3">
+          <div class="bg-light p-3 rounded border-left border-success">
+            <p class="text-muted small mb-1">Total Gain / Profit</p>
+            <h3 class="text-success">{{ result.summary.gain }}</h3>
+          </div>
+        </div>
+      </div>
+
+      <h5 class="mt-4 mb-3">Year-by-Year Breakdown</h5>
+      <div class="table-responsive">
+        <table class="table table-striped table-hover">
+          <thead class="table-light">
+            <tr>
+              <th>Year</th>
+              <th>Monthly Investment</th>
+              <th>Beginning Balance</th>
+              <th>Year End Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in result.schedule %}
+            <tr>
+              <td><strong>{{ row.year }}</strong></td>
+              <td>{{ row.monthly_investment }}</td>
+              <td>{{ row.beginning_value }}</td>
+              <td><strong>{{ row.end_value }}</strong></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
-  {% endif %}
-
-  {% if error %}
-  <div class="alert alert-danger">{{ error }}</div>
   {% endif %}
 </div>
 
 <script>
-  document.getElementById("calcForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-    const data = Object.fromEntries(formData);
-    fetch("{{ url_for('calculators.incremental_investment_calculator_api') }}", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(data)
-    })
-    .then(res => res.json())
-    .then(result => {
-      if (result.success) {
-        console.log("Calculation result:", result);
-        alert("Calculation submitted. Check console for details.");
-      } else {
-        alert("Error: " + (result.error || "Calculation failed"));
+function clearError(element) {
+  element.classList.remove('is-invalid');
+}
+
+function setError(element, message) {
+  element.classList.add('is-invalid');
+}
+
+function toggleIncrementType() {
+  const mode = document.getElementById('increment_mode').value;
+  if (mode === 'percent') {
+    document.getElementById('percentIncrement').style.display = '';
+    document.getElementById('fixedIncrement').style.display = 'none';
+  } else {
+    document.getElementById('percentIncrement').style.display = 'none';
+    document.getElementById('fixedIncrement').style.display = '';
+  }
+}
+
+function validateInvestForm() {
+  const monthlyInv = document.getElementById('monthly_inv');
+  const years = document.getElementById('years');
+  const annualReturn = document.getElementById('annual_return');
+  const increment = document.getElementById('increment_mode').value === 'percent' 
+                    ? document.getElementById('increment_percent')
+                    : document.getElementById('increment_value');
+  
+  let isValid = true;
+  
+  if (!monthlyInv.value || parseFloat(monthlyInv.value) < 1000) {
+    setError(monthlyInv, 'Please enter monthly investment (minimum ₹1,000)');
+    isValid = false;
+  } else {
+    clearError(monthlyInv);
+  }
+  
+  if (!years.value || parseInt(years.value) < 1 || parseInt(years.value) > 50) {
+    setError(years, 'Please enter valid investment period (1-50 years)');
+    isValid = false;
+  } else {
+    clearError(years);
+  }
+  
+  if (!annualReturn.value || parseFloat(annualReturn.value) < 0) {
+    setError(annualReturn, 'Please enter valid annual return (0-30%)');
+    isValid = false;
+  } else {
+    clearError(annualReturn);
+  }
+  
+  if (!increment.value || parseFloat(increment.value) < 0) {
+    setError(increment, 'Please enter valid increment value');
+    isValid = false;
+  } else {
+    clearError(increment);
+  }
+  
+  return isValid;
+}
+
+function submitInvestForm(event) {
+  event.preventDefault();
+  
+  if (!validateInvestForm()) {
+    return false;
+  }
+  
+  const formData = {
+    input_2: document.getElementById('monthly_inv').value,
+    input_3: document.getElementById('years').value,
+    input_4: document.getElementById('annual_return').value,
+    input_5: document.getElementById('increment_mode').value === 'percent' 
+             ? document.getElementById('increment_percent').value
+             : document.getElementById('increment_value').value,
+    mode: document.getElementById('increment_mode').value
+  };
+  
+  fetch("{{ url_for('calculators.incremental_investment_calculator_api') }}", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(formData)
+  })
+  .then(res => res.json())
+  .then(result => {
+    if (result.success) {
+      console.log("Calculation result:", result);
+      if (result.summary) {
+        alert("Calculation complete! Final Value: " + result.summary.final_value);
       }
-    })
-    .catch(err => {
-      console.error("API error:", err);
-      alert("Failed to calculate: " + err.message);
-    });
+    } else {
+      alert("Error: " + (result.error || "Calculation failed"));
+    }
+  })
+  .catch(err => {
+    console.error("API error:", err);
+    alert("Failed to calculate: " + err.message);
   });
+  
+  return false;
+}
 </script>
+
+<style>
+.is-invalid {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.border-left {
+  border-left: 4px solid;
+}
+
+.table-responsive {
+  max-height: 500px;
+  overflow-y: auto;
+}
+</style>
 {% endblock %}

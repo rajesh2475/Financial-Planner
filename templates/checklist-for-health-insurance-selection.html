@@ -6,7 +6,6 @@
   <div class="card shadow-sm mb-4">
     <div class="card-header fw-semibold">Checklist For Health Insurance Selection</div>
     <div class="card-body">
-      <p><strong>Source Excel File:</strong> Checklist for Health Insurance Selection.xlsx</p>
       <p>This calculator is automatically generated from the Excel workbook. Enter your inputs below to calculate results.</p>
       
       <form id="calcForm" method="POST">
@@ -36,7 +35,14 @@
     <div class="card-body">
       <table class="table table-bordered">
         <tbody>
-
+        <tr>
+          <th>Status</th>
+          <td id="result_status">-</td>
+        </tr>
+        <tr>
+          <th>Message</th>
+          <td id="result_message">-</td>
+        </tr>
         </tbody>
       </table>
     </div>

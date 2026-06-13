@@ -582,10 +582,6 @@
             <i class="fas fa-flame"></i>
             FIRE Calculator
           </a>
-          <a href="{{ url_for('calculators.nps_new_changes') }}" class="sidebar-link">
-            <i class="fas fa-landmark"></i>
-            NPS Changes
-          </a>
           <a href="{{ url_for('calculators.tax_calculator') }}" class="sidebar-link">
             <i class="fas fa-file-invoice-dollar"></i>
             Tax Calculator
@@ -766,6 +762,86 @@
           if (window.innerWidth <= 768) closeSidebar();
         });
       });
+    });
+    
+    // Generic API form handler: intercept forms with id 'calcForm' on /calc/* pages
+    document.addEventListener('DOMContentLoaded', function() {
+      try {
+        const path = window.location.pathname || '';
+        if (!path.startsWith('/calc/')) return; // only for calculator pages
+        const form = document.getElementById('calcForm');
+        if (!form) return;
+        const apiUrl = path.endsWith('/') ? path + 'api' : path + '/api';
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          const fd = new FormData(form);
+          const data = Object.fromEntries(fd.entries());
+          fetch(apiUrl, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) })
+            .then(r => r.json())
+            .then(resp => {
+              if (resp && resp.success) {
+                const result = resp.result || resp;
+                // populate elements with id 'result_<key>'
+                Object.keys(result).forEach(k => {
+                  const el = document.getElementById('result_' + k);
+                  if (el) el.innerText = result[k];
+                });
+                // show a results card if present
+                const resultsCard = document.getElementById('resultsCard') || document.querySelector('.results-card');
+                if (resultsCard) resultsCard.style.display = 'block';
+              } else {
+                // try to show error inline
+                const err = (resp && resp.error) ? resp.error : 'Calculation failed';
+                const errEl = document.querySelector('.alert-danger') || document.createElement('div');
+                if (!errEl.classList.contains('alert')) {
+                  errEl.className = 'alert alert-danger';
+                  form.parentNode.insertBefore(errEl, form);
+                }
+                errEl.textContent = err;
+              }
+            })
+            .catch(err => {
+              console.error('API submit error', err);
+              alert('Failed to calculate: ' + (err.message || err));
+            });
+        });
+      } catch (ex) { console.error('attachApiFormHandlers failed', ex); }
+    });
+  </script>
+
+  <script>
+    // Mark required fields with a red '*' next to their labels for calc forms
+    document.addEventListener('DOMContentLoaded', function() {
+      try {
+        const forms = document.querySelectorAll('form#calcForm');
+        forms.forEach(form => {
+          // Add legend note if any required inputs exist
+          const requiredInputs = Array.from(form.querySelectorAll('input[required], select[required], textarea[required]'));
+          if (requiredInputs.length > 0) {
+            // insert a small legend under the first legend or at the top of the form
+            let legend = form.querySelector('legend');
+            const note = document.createElement('div');
+            note.className = 'small text-muted required-legend mt-1';
+            note.innerHTML = "Fields marked <span class='text-danger'>*</span> are mandatory";
+            if (legend) legend.parentNode.insertBefore(note, legend.nextSibling);
+            else form.insertBefore(note, form.firstChild);
+          }
+
+          requiredInputs.forEach(inp => {
+            const id = inp.id;
+            if (!id) return;
+            const label = form.querySelector('label[for="' + id + '"]');
+            if (!label) return;
+            // don't duplicate if already present
+            if (label.querySelector('.required-star')) return;
+            const star = document.createElement('span');
+            star.className = 'text-danger required-star ms-1';
+            star.setAttribute('aria-hidden','true');
+            star.textContent = '*';
+            label.appendChild(star);
+          });
+        });
+      } catch (ex) { console.error('markRequiredFields failed', ex); }
     });
   </script>
 </body>

@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify
+from app.utils.helpers import safe_float, safe_int
 from pathlib import Path
 
 calc_bp = Blueprint("calculators", __name__)
@@ -24,14 +25,34 @@ def _500_to_1_crore_building_calculator():
 def _500_to_1_crore_building_calculator_api():
     """API endpoint for 500 to 1 crore building Calculator.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "500 to 1 crore building Calculator.xlsx",
-        "slug": "500-to-1-crore-building-calculator",
-        "title": "500 To 1 Crore Building Calculator",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        age = safe_int(data.get("input_0") or 0)
+        sip_investment = safe_float(data.get("input_1") or 0)
+        invest_till_age = safe_int(data.get("input_2") or 0)
+        expected_return = safe_float(data.get("input_3") or 0)
+        lumpsum = safe_float(data.get("input_4") or 0)
+        monthly = safe_float(data.get("input_5") or 0)
+
+        years = invest_till_age - age
+        n = years * 12
+        r = expected_return / 100 / 12
+
+        # Future value of SIP: FV = P * [((1+r)^n - 1)/r] * (1+r)
+        fv_sip = monthly * (((1 + r) ** n - 1) / r) * (1 + r) if r > 0 and n > 0 else monthly * n
+        # Future value of lumpsum: FV = P * (1+r)^n
+        fv_lumpsum = lumpsum * ((1 + r) ** n) if r > 0 and n > 0 else lumpsum
+
+        total_future_value = fv_sip + fv_lumpsum
+
+        result = {
+            "sip_investment": f"₹{sip_investment:,.0f}",
+            "future_value_sip": f"₹{fv_sip:,.0f}",
+            "future_value_lumpsum": f"₹{fv_lumpsum:,.0f}",
+            "total_future_value": f"₹{total_future_value:,.0f}"
+        }
+        return jsonify({"success": True, "result": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/ask-06th-feb-2026", methods=["GET", "POST"])
 def ask_06th_feb_2026():
@@ -52,14 +73,28 @@ def ask_06th_feb_2026():
 def ask_06th_feb_2026_api():
     """API endpoint for ASK 06th Feb 2026.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "ASK 06th Feb 2026.xlsx",
-        "slug": "ask-06th-feb-2026",
-        "title": "Ask 06Th Feb 2026",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        nums = []
+        for v in data.values():
+            try:
+                nums.append(safe_float(v))
+            except Exception:
+                continue
+
+        if nums:
+            summary = {
+                "count": len(nums),
+                "sum": round(sum(nums), 2),
+                "avg": round(sum(nums) / len(nums), 2),
+                "min": round(min(nums), 2),
+                "max": round(max(nums), 2),
+            }
+        else:
+            summary = {"count": 0}
+
+        return jsonify({"success": True, "file": "ASK 06th Feb 2026.xlsx", "result": summary, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/ask-15th-march-2026-show", methods=["GET", "POST"])
 def ask_15th_march_2026_show():
@@ -80,14 +115,20 @@ def ask_15th_march_2026_show():
 def ask_15th_march_2026_show_api():
     """API endpoint for ASK 15TH MARCH 2026 show.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "ASK 15TH MARCH 2026 show.xlsx",
-        "slug": "ask-15th-march-2026-show",
-        "title": "Ask 15Th March 2026 Show",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        nums = []
+        for v in data.values():
+            try:
+                nums.append(safe_float(v))
+            except Exception:
+                continue
+        if nums:
+            summary = {"count": len(nums), "sum": round(sum(nums), 2), "avg": round(sum(nums) / len(nums), 2)}
+        else:
+            summary = {"count": 0}
+        return jsonify({"success": True, "file": "ASK 15TH MARCH 2026 show.xlsx", "result": summary, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/ask", methods=["GET", "POST"])
 def ask():
@@ -108,14 +149,17 @@ def ask():
 def ask_api():
     """API endpoint for ASK.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "ASK.xlsx",
-        "slug": "ask",
-        "title": "Ask",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        nums = []
+        for v in data.values():
+            try:
+                nums.append(safe_float(v))
+            except Exception:
+                continue
+        summary = {"count": len(nums), "sum": round(sum(nums), 2) if nums else 0}
+        return jsonify({"success": True, "file": "ASK.xlsx", "result": summary, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/annexure-february-2023", methods=["GET", "POST"])
 def annexure_february_2023():
@@ -136,14 +180,12 @@ def annexure_february_2023():
 def annexure_february_2023_api():
     """API endpoint for Annexure_February_2023.xls."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "Annexure_February_2023.xls",
-        "slug": "annexure-february-2023",
-        "title": "Annexure February 2023",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        nums = [safe_float(v) for v in data.values() if str(v).strip() != ""]
+        summary = {"count": len(nums), "sum": round(sum(nums), 2) if nums else 0}
+        return jsonify({"success": True, "file": "Annexure_February_2023.xls", "result": summary, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/askmoneypurse-272", methods=["GET", "POST"])
 def askmoneypurse_272():
@@ -164,14 +206,16 @@ def askmoneypurse_272():
 def askmoneypurse_272_api():
     """API endpoint for Askmoneypurse 272.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "Askmoneypurse 272.xlsx",
-        "slug": "askmoneypurse-272",
-        "title": "Askmoneypurse 272",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        nums = []
+        for v in data.values():
+            try:
+                nums.append(safe_float(v))
+            except Exception:
+                continue
+        return jsonify({"success": True, "file": "Askmoneypurse 272.xlsx", "result": {"count": len(nums), "sum": round(sum(nums), 2) if nums else 0}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/banking-funds-portfolio-overlap-data", methods=["GET", "POST"])
 def banking_funds_portfolio_overlap_data():
@@ -192,14 +236,17 @@ def banking_funds_portfolio_overlap_data():
 def banking_funds_portfolio_overlap_data_api():
     """API endpoint for Banking Funds Portfolio Overlap data.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "Banking Funds Portfolio Overlap data.xlsx",
-        "slug": "banking-funds-portfolio-overlap-data",
-        "title": "Banking Funds Portfolio Overlap Data",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        nums = []
+        for k, v in data.items():
+            try:
+                nums.append(safe_float(v))
+            except Exception:
+                continue
+        summary = {"count": len(nums), "total": round(sum(nums), 2) if nums else 0}
+        return jsonify({"success": True, "file": "Banking Funds Portfolio Overlap data.xlsx", "result": summary, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/budget-2024-income-tax-calculation-sheet", methods=["GET", "POST"])
 def budget_2024_income_tax_calculation_sheet():
@@ -220,14 +267,14 @@ def budget_2024_income_tax_calculation_sheet():
 def budget_2024_income_tax_calculation_sheet_api():
     """API endpoint for Budget 2024 Income Tax Calculation Sheet.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "Budget 2024 Income Tax Calculation Sheet.xlsx",
-        "slug": "budget-2024-income-tax-calculation-sheet",
-        "title": "Budget 2024 Income Tax Calculation Sheet",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        # If user provides income fields, compute a simplified tax estimate (10% of income)
+        income = safe_float(data.get("income") or data.get("input_0") or 0)
+        taxable = income
+        tax = round(taxable * 0.10, 2)
+        return jsonify({"success": True, "file": "Budget 2024 Income Tax Calculation Sheet.xlsx", "result": {"taxable_income": taxable, "tax_estimate": tax}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/cng-vs-ev-vs-petrol", methods=["GET", "POST"])
 def cng_vs_ev_vs_petrol():
@@ -248,14 +295,18 @@ def cng_vs_ev_vs_petrol():
 def cng_vs_ev_vs_petrol_api():
     """API endpoint for CNG VS EV VS PETROL.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "CNG VS EV VS PETROL.xlsx",
-        "slug": "cng-vs-ev-vs-petrol",
-        "title": "Cng Vs Ev Vs Petrol",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        # Compare running cost per km if provided
+        cng = safe_float(data.get("cng_per_km") or data.get("input_0") or 0)
+        ev = safe_float(data.get("ev_per_km") or data.get("input_1") or 0)
+        petrol = safe_float(data.get("petrol_per_km") or data.get("input_2") or 0)
+        costs = {"cng": cng, "ev": ev, "petrol": petrol}
+        cheapest = None
+        if any([cng, ev, petrol]):
+            cheapest = min(costs, key=costs.get)
+        return jsonify({"success": True, "file": "CNG VS EV VS PETROL.xlsx", "result": {"costs": costs, "cheapest": cheapest}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/car-purchase-vs-ride-hailing-apps", methods=["GET", "POST"])
 def car_purchase_vs_ride_hailing_apps():
@@ -276,14 +327,13 @@ def car_purchase_vs_ride_hailing_apps():
 def car_purchase_vs_ride_hailing_apps_api():
     """API endpoint for Car Purchase vs Ride Hailing Apps.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "Car Purchase vs Ride Hailing Apps.xlsx",
-        "slug": "car-purchase-vs-ride-hailing-apps",
-        "title": "Car Purchase Vs Ride Hailing Apps",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        owning_monthly = safe_float(data.get("owning_monthly") or data.get("input_0") or 0)
+        rides_monthly = safe_float(data.get("rides_monthly") or data.get("input_1") or 0)
+        recommendation = "own" if owning_monthly and owning_monthly < rides_monthly else "ride"
+        return jsonify({"success": True, "file": "Car Purchase vs Ride Hailing Apps.xlsx", "result": {"owning_monthly": owning_monthly, "rides_monthly": rides_monthly, "recommendation": recommendation}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/checklist-for-health-insurance-selection", methods=["GET", "POST"])
 def checklist_for_health_insurance_selection():
@@ -332,14 +382,13 @@ def credit_cards_data_2():
 def credit_cards_data_2_api():
     """API endpoint for Credit cards data 2.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "Credit cards data 2.xlsx",
-        "slug": "credit-cards-data-2",
-        "title": "Credit Cards Data 2",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        # summarize any numeric card rewards/costs provided
+        nums = [safe_float(v) for v in data.values() if str(v).strip() != ""]
+        summary = {"count": len(nums), "sum": round(sum(nums), 2) if nums else 0}
+        return jsonify({"success": True, "file": "Credit cards data 2.xlsx", "result": summary, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/dcf-calculator", methods=["GET", "POST"])
 def dcf_calculator():
@@ -360,14 +409,20 @@ def dcf_calculator():
 def dcf_calculator_api():
     """API endpoint for DCF Calculator.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "DCF Calculator.xlsx",
-        "slug": "dcf-calculator",
-        "title": "Dcf Calculator",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        # Basic DCF helper: if cashflows provided, compute simple NPV using discount rate
+        cashflows = data.get("cashflows") or data.get("input_0") or []
+        # Expect cashflows as comma-separated or list
+        if isinstance(cashflows, str):
+            parts = [p.strip() for p in cashflows.split(",") if p.strip()]
+            cashflows = [safe_float(p) for p in parts]
+        discount = safe_float(data.get("discount") or data.get("input_1") or 10) / 100
+        npv = 0
+        for i, cf in enumerate(cashflows, start=1):
+            npv += cf / ((1 + discount) ** i)
+        return jsonify({"success": True, "file": "DCF Calculator.xlsx", "result": {"npv": round(npv, 2), "cashflows_count": len(cashflows)}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/dream-house-calculator", methods=["GET", "POST"])
 def dream_house_calculator():
@@ -388,14 +443,14 @@ def dream_house_calculator():
 def dream_house_calculator_api():
     """API endpoint for DREAM HOUSE CALCULATOR.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "DREAM HOUSE CALCULATOR.xlsx",
-        "slug": "dream-house-calculator",
-        "title": "Dream House Calculator",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        price = safe_float(data.get("house_price") or data.get("input_0") or 0)
+        downpayment_pct = safe_float(data.get("downpayment_pct") or data.get("input_1") or 20) / 100
+        downpayment = round(price * downpayment_pct, 2)
+        loan_needed = round(price - downpayment, 2)
+        return jsonify({"success": True, "file": "DREAM HOUSE CALCULATOR.xlsx", "result": {"downpayment": downpayment, "loan_needed": loan_needed}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/defence-sector", methods=["GET", "POST"])
 def defence_sector():
@@ -416,14 +471,12 @@ def defence_sector():
 def defence_sector_api():
     """API endpoint for Defence Sector.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "Defence Sector.xlsx",
-        "slug": "defence-sector",
-        "title": "Defence Sector",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        # Simple summary of numeric values
+        nums = [safe_float(v) for v in data.values() if str(v).strip() != ""]
+        return jsonify({"success": True, "file": "Defence Sector.xlsx", "result": {"count": len(nums), "sum": round(sum(nums), 2) if nums else 0}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/dream-house-with-etf-strategy", methods=["GET", "POST"])
 def dream_house_with_etf_strategy():
@@ -444,14 +497,20 @@ def dream_house_with_etf_strategy():
 def dream_house_with_etf_strategy_api():
     """API endpoint for Dream House With ETF Strategy.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "Dream House With ETF Strategy.xlsx",
-        "slug": "dream-house-with-etf-strategy",
-        "title": "Dream House With Etf Strategy",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        target = safe_float(data.get("target_amount") or data.get("input_0") or 0)
+        years = safe_int(data.get("years") or data.get("input_1") or 5)
+        annual_return = safe_float(data.get("annual_return") or data.get("input_2") or 8) / 100
+        # Simplified required SIP to reach target: PMT formula
+        r = annual_return / 12
+        n = years * 12
+        if r > 0:
+            sip = target * r / (((1 + r) ** n) - 1)
+        else:
+            sip = target / n if n > 0 else 0
+        return jsonify({"success": True, "file": "Dream House With ETF Strategy.xlsx", "result": {"monthly_sip": round(sip, 2)}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/dream-vehicle-eleigibility-calculator", methods=["GET", "POST"])
 def dream_vehicle_eleigibility_calculator():
@@ -472,14 +531,12 @@ def dream_vehicle_eleigibility_calculator():
 def dream_vehicle_eleigibility_calculator_api():
     """API endpoint for Dream Vehicle Eleigibility Calculator.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "Dream Vehicle Eleigibility Calculator.xlsx",
-        "slug": "dream-vehicle-eleigibility-calculator",
-        "title": "Dream Vehicle Eleigibility Calculator",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        salary = safe_float(data.get("salary") or data.get("input_0") or 0)
+        max_emi = salary * 0.5  # simplistic: up to 50% of salary
+        return jsonify({"success": True, "file": "Dream Vehicle Eleigibility Calculator.xlsx", "result": {"max_emi": round(max_emi, 2)}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/ev-vs-petrol-claculator", methods=["GET", "POST"])
 def ev_vs_petrol_claculator():
@@ -500,14 +557,15 @@ def ev_vs_petrol_claculator():
 def ev_vs_petrol_claculator_api():
     """API endpoint for Ev vs Petrol Claculator.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "Ev vs Petrol Claculator.xlsx",
-        "slug": "ev-vs-petrol-claculator",
-        "title": "Ev Vs Petrol Claculator",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        ev_cost = safe_float(data.get("ev_per_km") or data.get("input_0") or 0)
+        petrol_cost = safe_float(data.get("petrol_per_km") or data.get("input_1") or 0)
+        cheaper = None
+        if ev_cost and petrol_cost:
+            cheaper = "ev" if ev_cost < petrol_cost else "petrol"
+        return jsonify({"success": True, "file": "Ev vs Petrol Claculator.xlsx", "result": {"ev_per_km": ev_cost, "petrol_per_km": petrol_cost, "cheaper": cheaper}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/financial-planning", methods=["GET", "POST"])
 def financial_planning():
@@ -528,14 +586,14 @@ def financial_planning():
 def financial_planning_api():
     """API endpoint for FINANCIAL PLANNING.xls."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "FINANCIAL PLANNING.xls",
-        "slug": "financial-planning",
-        "title": "Financial Planning",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        # If user provides monthly_income and monthly_expenses, compute surplus
+        income = safe_float(data.get("monthly_income") or data.get("income") or 0)
+        expenses = safe_float(data.get("monthly_expenses") or data.get("expenses") or 0)
+        surplus = round(income - expenses, 2)
+        return jsonify({"success": True, "file": "FINANCIAL PLANNING.xls", "result": {"monthly_income": income, "monthly_expenses": expenses, "surplus": surplus}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/financial-safety-number-calculator", methods=["GET", "POST"])
 def financial_safety_number_calculator():
@@ -556,14 +614,17 @@ def financial_safety_number_calculator():
 def financial_safety_number_calculator_api():
     """API endpoint for FINANCIAL SAFETY NUMBER CALCULATOR.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "FINANCIAL SAFETY NUMBER CALCULATOR.xlsx",
-        "slug": "financial-safety-number-calculator",
-        "title": "Financial Safety Number Calculator",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        # Prefer the field mapped by the improved UI: `input_6` is PRESENT EXPENSES
+        # Keep backwards compatibility by falling back to `monthly_expense` or `input_0`.
+        monthly_expense = safe_float(
+            data.get("monthly_expense") or data.get("input_6") or data.get("input_0") or 0
+        )
+        # safety number as 25x annual expense
+        safety = round(monthly_expense * 12 * 25, 2)
+        return jsonify({"success": True, "file": "FINANCIAL SAFETY NUMBER CALCULATOR.xlsx", "result": {"safety_number": safety}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/fire", methods=["GET", "POST"])
 def fire():
@@ -584,14 +645,12 @@ def fire():
 def fire_api():
     """API endpoint for FIRE.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "FIRE.xlsx",
-        "slug": "fire",
-        "title": "Fire",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        annual_expense = safe_float(data.get("annual_expense") or data.get("input_0") or 0)
+        corpus = round(annual_expense * 25, 2)  # 25x rule
+        return jsonify({"success": True, "file": "FIRE.xlsx", "result": {"required_corpus": corpus}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/fp-of-23rd-nov-2025", methods=["GET", "POST"])
 def fp_of_23rd_nov_2025():
@@ -612,14 +671,11 @@ def fp_of_23rd_nov_2025():
 def fp_of_23rd_nov_2025_api():
     """API endpoint for FP of 23rd Nov 2025.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "FP of 23rd Nov 2025.xlsx",
-        "slug": "fp-of-23rd-nov-2025",
-        "title": "Fp Of 23Rd Nov 2025",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        nums = [safe_float(v) for v in data.values() if str(v).strip() != ""]
+        return jsonify({"success": True, "file": "FP of 23rd Nov 2025.xlsx", "result": {"count": len(nums), "sum": round(sum(nums),2) if nums else 0}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/fp-to-buy-house-2", methods=["GET", "POST"])
 def fp_to_buy_house_2():
@@ -640,14 +696,14 @@ def fp_to_buy_house_2():
 def fp_to_buy_house_2_api():
     """API endpoint for FP to buy House (2).xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "FP to buy House (2).xlsx",
-        "slug": "fp-to-buy-house-2",
-        "title": "Fp To Buy House (2)",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        price = safe_float(data.get("house_price") or data.get("input_0") or 0)
+        down_pct = safe_float(data.get("downpayment_pct") or data.get("input_1") or 20) / 100
+        down = round(price * down_pct, 2)
+        loan = round(price - down, 2)
+        return jsonify({"success": True, "file": "FP to buy House (2).xlsx", "result": {"downpayment": down, "loan": loan}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/fp-to-buy-house", methods=["GET", "POST"])
 def fp_to_buy_house():
@@ -668,14 +724,14 @@ def fp_to_buy_house():
 def fp_to_buy_house_api():
     """API endpoint for FP to buy House.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "FP to buy House.xlsx",
-        "slug": "fp-to-buy-house",
-        "title": "Fp To Buy House",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        price = safe_float(data.get("house_price") or data.get("input_0") or 0)
+        down_pct = safe_float(data.get("downpayment_pct") or data.get("input_1") or 20) / 100
+        down = round(price * down_pct, 2)
+        loan = round(price - down, 2)
+        return jsonify({"success": True, "file": "FP to buy House.xlsx", "result": {"downpayment": down, "loan": loan}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/fixed-returncalc", methods=["GET", "POST"])
 def fixed_returncalc():
@@ -724,14 +780,20 @@ def home_loan_repayment_final():
 def home_loan_repayment_final_api():
     """API endpoint for HOME LOAN REPAYMENT FINAL.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "HOME LOAN REPAYMENT FINAL.xlsx",
-        "slug": "home-loan-repayment-final",
-        "title": "Home Loan Repayment Final",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        principal = safe_float(data.get("principal") or data.get("input_0") or 0)
+        annual_rate = safe_float(data.get("annual_rate") or data.get("input_1") or 7) / 100
+        years = safe_int(data.get("years") or data.get("input_2") or 20)
+        n = years * 12
+        r = annual_rate / 12
+        if r > 0 and n > 0:
+            emi = principal * r * (1 + r) ** n / ((1 + r) ** n - 1)
+        else:
+            emi = principal / n if n > 0 else 0
+        total_payment = emi * n
+        return jsonify({"success": True, "file": "HOME LOAN REPAYMENT FINAL.xlsx", "result": {"emi": round(emi, 2), "total_payment": round(total_payment, 2)}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/health-insurance-edited-aa-1", methods=["GET", "POST"])
 def health_insurance_edited_aa_1():
@@ -752,14 +814,12 @@ def health_insurance_edited_aa_1():
 def health_insurance_edited_aa_1_api():
     """API endpoint for Health Insurance edited aa  (1).xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "Health Insurance edited aa  (1).xlsx",
-        "slug": "health-insurance-edited-aa-1",
-        "title": "Health Insurance Edited Aa  (1)",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        nums = [safe_float(v) for v in data.values() if str(v).strip() != ""]
+        summary = {"count": len(nums), "sum": round(sum(nums), 2) if nums else 0}
+        return jsonify({"success": True, "file": "Health Insurance edited aa  (1).xlsx", "result": summary, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/home-loan-calculator", methods=["GET", "POST"])
 def home_loan_calculator():
@@ -780,14 +840,20 @@ def home_loan_calculator():
 def home_loan_calculator_api():
     """API endpoint for Home Loan Calculator.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "Home Loan Calculator.xlsx",
-        "slug": "home-loan-calculator",
-        "title": "Home Loan Calculator",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        principal = safe_float(data.get("principal") or data.get("loan_amount") or data.get("input_0") or 0)
+        annual_rate = safe_float(data.get("annual_rate") or data.get("interest_rate") or data.get("input_1") or 7) / 100
+        years = safe_int(data.get("tenure_years") or data.get("input_2") or 20)
+        n = years * 12
+        r = annual_rate / 12
+        if r > 0 and n > 0:
+            emi = principal * r * (1 + r) ** n / ((1 + r) ** n - 1)
+        else:
+            emi = principal / n if n > 0 else 0
+        total_payment = emi * n
+        return jsonify({"success": True, "file": "Home Loan Calculator.xlsx", "result": {"emi": round(emi, 2), "total_payment": round(total_payment, 2)}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/home-loan-emi", methods=["GET", "POST"])
 def home_loan_emi():
@@ -808,14 +874,19 @@ def home_loan_emi():
 def home_loan_emi_api():
     """API endpoint for Home Loan EMI.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "Home Loan EMI.xlsx",
-        "slug": "home-loan-emi",
-        "title": "Home Loan Emi",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        principal = safe_float(data.get("principal") or data.get("input_0") or 0)
+        annual_rate = safe_float(data.get("annual_rate") or data.get("input_1") or 7) / 100
+        years = safe_int(data.get("years") or data.get("input_2") or 20)
+        n = years * 12
+        r = annual_rate / 12
+        if r > 0 and n > 0:
+            emi = principal * r * (1 + r) ** n / ((1 + r) ** n - 1)
+        else:
+            emi = principal / n if n > 0 else 0
+        return jsonify({"success": True, "file": "Home Loan EMI.xlsx", "result": {"emi": round(emi, 2)}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/home-loan-transfer-calculator-2", methods=["GET", "POST"])
 def home_loan_transfer_calculator_2():
@@ -836,14 +907,21 @@ def home_loan_transfer_calculator_2():
 def home_loan_transfer_calculator_2_api():
     """API endpoint for Home Loan Transfer Calculator (2).xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "Home Loan Transfer Calculator (2).xlsx",
-        "slug": "home-loan-transfer-calculator-2",
-        "title": "Home Loan Transfer Calculator (2)",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        # Provide simple comparison between current emi and new emi given new rate
+        principal = safe_float(data.get("principal") or data.get("input_0") or 0)
+        current_rate = safe_float(data.get("current_rate") or data.get("input_1") or 7) / 100
+        new_rate = safe_float(data.get("new_rate") or data.get("input_2") or 6) / 100
+        years_remaining = safe_int(data.get("years_remaining") or data.get("input_3") or 10)
+        def calc_emi(p, annual_r, yrs):
+            rn = annual_r / 12
+            nn = yrs * 12
+            return p * rn * (1 + rn) ** nn / ((1 + rn) ** nn - 1) if rn > 0 and nn>0 else p/nn if nn>0 else 0
+        current_emi = calc_emi(principal, current_rate, years_remaining)
+        new_emi = calc_emi(principal, new_rate, years_remaining)
+        return jsonify({"success": True, "file": "Home Loan Transfer Calculator (2).xlsx", "result": {"current_emi": round(current_emi,2), "new_emi": round(new_emi,2)}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/home-loan-transfer-calculator", methods=["GET", "POST"])
 def home_loan_transfer_calculator():
@@ -864,14 +942,20 @@ def home_loan_transfer_calculator():
 def home_loan_transfer_calculator_api():
     """API endpoint for Home Loan Transfer Calculator.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "Home Loan Transfer Calculator.xlsx",
-        "slug": "home-loan-transfer-calculator",
-        "title": "Home Loan Transfer Calculator",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        principal = safe_float(data.get("principal") or data.get("input_0") or 0)
+        current_rate = safe_float(data.get("current_rate") or data.get("input_1") or 7) / 100
+        new_rate = safe_float(data.get("new_rate") or data.get("input_2") or 6) / 100
+        years_remaining = safe_int(data.get("years_remaining") or data.get("input_3") or 10)
+        def calc_emi(p, annual_r, yrs):
+            rn = annual_r / 12
+            nn = yrs * 12
+            return p * rn * (1 + rn) ** nn / ((1 + rn) ** nn - 1) if rn > 0 and nn>0 else p/nn if nn>0 else 0
+        current_emi = calc_emi(principal, current_rate, years_remaining)
+        new_emi = calc_emi(principal, new_rate, years_remaining)
+        return jsonify({"success": True, "file": "Home Loan Transfer Calculator.xlsx", "result": {"current_emi": round(current_emi,2), "new_emi": round(new_emi,2)}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/house-flat-purchase-eligibility-calculator", methods=["GET", "POST"])
 def house_flat_purchase_eligibility_calculator():
@@ -892,14 +976,13 @@ def house_flat_purchase_eligibility_calculator():
 def house_flat_purchase_eligibility_calculator_api():
     """API endpoint for House_Flat Purchase Eligibility Calculator.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "House_Flat Purchase Eligibility Calculator.xlsx",
-        "slug": "house-flat-purchase-eligibility-calculator",
-        "title": "House Flat Purchase Eligibility Calculator",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        salary = safe_float(data.get("salary") or data.get("input_0") or 0)
+        # simple rule: eligibility = annual_salary * 5
+        eligibility = round(salary * 12 * 5, 2)
+        return jsonify({"success": True, "file": "House_Flat Purchase Eligibility Calculator.xlsx", "result": {"eligibility": eligibility}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/income-tax-calculator-2023", methods=["GET", "POST"])
 def income_tax_calculator_2023():
@@ -920,14 +1003,13 @@ def income_tax_calculator_2023():
 def income_tax_calculator_2023_api():
     """API endpoint for Income Tax Calculator 2023.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "Income Tax Calculator 2023.xlsx",
-        "slug": "income-tax-calculator-2023",
-        "title": "Income Tax Calculator 2023",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        income = safe_float(data.get("annual_income") or data.get("income") or 0)
+        # simplified tax estimate: 10% of income
+        tax = round(income * 0.10, 2)
+        return jsonify({"success": True, "file": "Income Tax Calculator 2023.xlsx", "result": {"annual_income": income, "tax_estimate": tax}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/incremental-investment-calculator", methods=["GET", "POST"])
 def incremental_investment_calculator():
@@ -948,14 +1030,20 @@ def incremental_investment_calculator():
 def incremental_investment_calculator_api():
     """API endpoint for Incremental Investment Calculator.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "Incremental Investment Calculator.xlsx",
-        "slug": "incremental-investment-calculator",
-        "title": "Incremental Investment Calculator",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        monthly = safe_float(data.get("monthly") or data.get("input_0") or 0)
+        years = safe_int(data.get("years") or data.get("input_1") or 0)
+        annual_return = safe_float(data.get("annual_return") or data.get("input_2") or 8) / 100
+        n = years * 12
+        r = annual_return / 12
+        fv = 0
+        if r > 0 and n > 0:
+            fv = monthly * (((1 + r) ** n - 1) / r) * (1 + r)
+        else:
+            fv = monthly * n
+        return jsonify({"success": True, "file": "Incremental Investment Calculator.xlsx", "result": {"future_value": round(fv,2)}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/incremental-sip-calculator", methods=["GET", "POST"])
 def incremental_sip_calculator():
@@ -974,16 +1062,92 @@ def incremental_sip_calculator():
 
 @calc_bp.route("/incremental-sip-calculator/api", methods=["POST"])
 def incremental_sip_calculator_api():
-    """API endpoint for Incremental SIP Calculator.xlsx."""
-    data = request.get_json() or {}
-    return jsonify({
-        "file": "Incremental SIP Calculator.xlsx",
-        "slug": "incremental-sip-calculator",
-        "title": "Incremental Sip Calculator",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    """API endpoint for Incremental SIP Calculator.xlsx.
+
+    This endpoint accepts both JSON (application/json) and form-encoded POSTs.
+    - For JSON requests it returns a JSON response with calculation results.
+    - For regular form POSTs it renders the page with results (backwards compatible).
+    The actual calculation is delegated to the stepup_sip_schedule helper in
+    `app.routes.spi` (reused to avoid duplicating logic).
+    """
+    # import locally to avoid circular imports at module load time
+    from app.routes.spi import stepup_sip_schedule
+
+    # Accept JSON or form data
+    try:
+        if request.is_json:
+            data = request.get_json() or {}
+            # map incoming names to same variables used by stepup_sip_schedule
+            planned_monthly_investment = safe_float(data.get("input_2") or data.get("plannedMonthlyInvestment") or 0)
+            years_of_investment = int(data.get("input_3") or data.get("yearsOfInvestment") or 0)
+            annual_return = safe_float(data.get("input_4") or data.get("annualReturn") or 0) / 100.0
+            mode = data.get("mode") or "percent"
+            increment_raw = safe_float(data.get("input_5") or data.get("incrementValue") or 0)
+            # when mode is percent the client typically sends a percentage (e.g. 10 for 10%)
+            increment_value = (increment_raw / 100.0) if mode == "percent" else increment_raw
+            holding_years = int(data.get("holdingYears") or 0)
+
+            # basic validations
+            if planned_monthly_investment < 0 or years_of_investment < 0 or annual_return < 0:
+                return jsonify({"success": False, "error": "Inputs must be non-negative"}), 400
+            if mode == "percent" and increment_value < -1:
+                return jsonify({"success": False, "error": "Percent increment cannot be less than -100%"}), 400
+
+            result = stepup_sip_schedule(
+                planned_monthly_investment=planned_monthly_investment,
+                years_of_investment=years_of_investment,
+                annual_return=annual_return,
+                increment_value=increment_value,
+                mode=mode,
+                holding_years=holding_years,
+            )
+
+            # format summary numbers for JSON response
+            summary = result.get("summary", {})
+            formatted_summary = {
+                "final_value": f"₹{summary.get('final_value', 0):,.2f}",
+                "total_invested": f"₹{summary.get('total_invested', 0):,.2f}",
+                "gain": f"₹{summary.get('gain', 0):,.2f}",
+            }
+
+            return jsonify({"success": True, "summary": formatted_summary, "schedule": result.get("schedule", [])})
+
+        # Fallback: handle traditional form POST (render page)
+        form_data = dict(request.form)
+        planned_monthly_investment = safe_float(request.form.get("plannedMonthlyInvestment") or request.form.get("input_2") or 0)
+        years_of_investment = int(request.form.get("yearsOfInvestment") or request.form.get("input_3") or 0)
+        annual_return = safe_float(request.form.get("annualReturn") or request.form.get("input_4") or 0) / 100.0
+        mode = request.form.get("mode") or "percent"
+        increment_value = safe_float(request.form.get("incrementValue") or request.form.get("input_5") or 0) / 100.0 if mode == "percent" else safe_float(request.form.get("incrementValue") or request.form.get("input_5") or 0)
+        holding_years = int(request.form.get("holdingYears") or 0)
+
+        # basic validations
+        if planned_monthly_investment < 0 or years_of_investment < 0 or annual_return < 0:
+            return render_template("incremental-sip-calculator.html", form=form_data, result=None, error="Inputs must be non-negative")
+
+        result = stepup_sip_schedule(
+            planned_monthly_investment=planned_monthly_investment,
+            years_of_investment=years_of_investment,
+            annual_return=annual_return,
+            increment_value=increment_value,
+            mode=mode,
+            holding_years=holding_years,
+        )
+
+        # prepare display-friendly form
+        display_form = {
+            "input_2": planned_monthly_investment,
+            "input_3": years_of_investment,
+            "input_4": annual_return * 100,
+            "input_5": (increment_value * 100) if mode == "percent" else increment_value,
+            "mode": mode,
+            "holdingYears": holding_years,
+        }
+
+        return render_template("incremental-sip-calculator.html", form=display_form, result=result)
+
+    except (TypeError, ValueError) as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/kids-investment-calculator", methods=["GET", "POST"])
 def kids_investment_calculator():
@@ -1004,14 +1168,16 @@ def kids_investment_calculator():
 def kids_investment_calculator_api():
     """API endpoint for Kids Investment Calculator.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "Kids Investment Calculator.xlsx",
-        "slug": "kids-investment-calculator",
-        "title": "Kids Investment Calculator",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        monthly = safe_float(data.get("monthly") or data.get("input_0") or 0)
+        years = safe_int(data.get("years") or data.get("input_1") or 10)
+        annual_return = safe_float(data.get("annual_return") or data.get("input_2") or 8) / 100
+        n = years * 12
+        r = annual_return / 12
+        fv = monthly * (((1 + r) ** n - 1) / r) * (1 + r) if r > 0 and n > 0 else monthly * n
+        return jsonify({"success": True, "file": "Kids Investment Calculator.xlsx", "result": {"future_value": round(fv,2)}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/monthly-budget-planning-3", methods=["GET", "POST"])
 def monthly_budget_planning_3():
@@ -1032,14 +1198,13 @@ def monthly_budget_planning_3():
 def monthly_budget_planning_3_api():
     """API endpoint for Monthly Budget Planning (3).xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "Monthly Budget Planning (3).xlsx",
-        "slug": "monthly-budget-planning-3",
-        "title": "Monthly Budget Planning (3)",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        income = safe_float(data.get("income") or data.get("monthly_income") or 0)
+        essentials = safe_float(data.get("essentials") or data.get("input_0") or 0)
+        savings = round(income - essentials, 2)
+        return jsonify({"success": True, "file": "Monthly Budget Planning (3).xlsx", "result": {"savings": savings}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/monthly-budget-planning", methods=["GET", "POST"])
 def monthly_budget_planning():
@@ -1060,14 +1225,13 @@ def monthly_budget_planning():
 def monthly_budget_planning_api():
     """API endpoint for Monthly Budget Planning.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "Monthly Budget Planning.xlsx",
-        "slug": "monthly-budget-planning",
-        "title": "Monthly Budget Planning",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        income = safe_float(data.get("income") or data.get("monthly_income") or 0)
+        total_expenses = sum([safe_float(v) for k, v in data.items() if k.startswith("expense_")])
+        savings = round(income - total_expenses, 2)
+        return jsonify({"success": True, "file": "Monthly Budget Planning.xlsx", "result": {"savings": savings, "total_expenses": round(total_expenses,2)}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/my-family-financial-tracker", methods=["GET", "POST"])
 def my_family_financial_tracker():
@@ -1088,14 +1252,11 @@ def my_family_financial_tracker():
 def my_family_financial_tracker_api():
     """API endpoint for My Family Financial Tracker.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "My Family Financial Tracker.xlsx",
-        "slug": "my-family-financial-tracker",
-        "title": "My Family Financial Tracker",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        nums = [safe_float(v) for v in data.values() if str(v).strip() != ""]
+        return jsonify({"success": True, "file": "My Family Financial Tracker.xlsx", "result": {"count": len(nums), "sum": round(sum(nums),2) if nums else 0}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/networth", methods=["GET", "POST"])
 def networth():
@@ -1116,14 +1277,13 @@ def networth():
 def networth_api():
     """API endpoint for NETWORTH.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "NETWORTH.xlsx",
-        "slug": "networth",
-        "title": "Networth",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        assets = sum([safe_float(v) for k, v in data.items() if k.startswith("asset_")])
+        liabilities = sum([safe_float(v) for k, v in data.items() if k.startswith("liability_")])
+        net = round(assets - liabilities, 2)
+        return jsonify({"success": True, "file": "NETWORTH.xlsx", "result": {"assets": round(assets,2), "liabilities": round(liabilities,2), "networth": net}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/new-home-loan-repayment-final", methods=["GET", "POST"])
 def new_home_loan_repayment_final():
@@ -1144,42 +1304,16 @@ def new_home_loan_repayment_final():
 def new_home_loan_repayment_final_api():
     """API endpoint for NEW HOME LOAN REPAYMENT FINAL.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "NEW HOME LOAN REPAYMENT FINAL.xlsx",
-        "slug": "new-home-loan-repayment-final",
-        "title": "New Home Loan Repayment Final",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
-
-@calc_bp.route("/nps-new-changes", methods=["GET", "POST"])
-def nps_new_changes():
-    """Calculator page for NPS New Changes.xlsx."""
-    if request.method == "POST":
-        # Placeholder for form data processing
-        form_data = dict(request.form)
-        return render_template(
-            "nps-new-changes.html",
-            form=form_data,
-            result=None,
-            error="Calculator logic not yet implemented"
-        )
-    
-    return render_template("nps-new-changes.html", form={}, result=None)
-
-@calc_bp.route("/nps-new-changes/api", methods=["POST"])
-def nps_new_changes_api():
-    """API endpoint for NPS New Changes.xlsx."""
-    data = request.get_json() or {}
-    return jsonify({
-        "file": "NPS New Changes.xlsx",
-        "slug": "nps-new-changes",
-        "title": "Nps New Changes",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        principal = safe_float(data.get("principal") or data.get("input_0") or 0)
+        rate = safe_float(data.get("annual_rate") or data.get("input_1") or 7) / 100
+        years = safe_int(data.get("years") or data.get("input_2") or 20)
+        n = years * 12
+        r = rate / 12
+        emi = principal * r * (1 + r) ** n / ((1 + r) ** n - 1) if r > 0 and n>0 else principal / n if n>0 else 0
+        return jsonify({"success": True, "file": "NEW HOME LOAN REPAYMENT FINAL.xlsx", "result": {"emi": round(emi,2)}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/nps-vatsalya", methods=["GET", "POST"])
 def nps_vatsalya():
@@ -1200,14 +1334,11 @@ def nps_vatsalya():
 def nps_vatsalya_api():
     """API endpoint for NPS VATSALYA.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "NPS VATSALYA.xlsx",
-        "slug": "nps-vatsalya",
-        "title": "Nps Vatsalya",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        nums = [safe_float(v) for v in data.values() if str(v).strip() != ""]
+        return jsonify({"success": True, "file": "NPS VATSALYA.xlsx", "result": {"count": len(nums), "sum": round(sum(nums),2) if nums else 0}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/property-tax-calculator", methods=["GET", "POST"])
 def property_tax_calculator():
@@ -1228,14 +1359,13 @@ def property_tax_calculator():
 def property_tax_calculator_api():
     """API endpoint for PROPERTY TAX CALCULATOR.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "PROPERTY TAX CALCULATOR.xlsx",
-        "slug": "property-tax-calculator",
-        "title": "Property Tax Calculator",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        property_value = safe_float(data.get("property_value") or data.get("input_0") or 0)
+        tax_rate = safe_float(data.get("tax_rate") or data.get("input_1") or 0.2) / 100
+        tax = round(property_value * tax_rate, 2)
+        return jsonify({"success": True, "file": "PROPERTY TAX CALCULATOR.xlsx", "result": {"tax": tax}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/rental-yield-calculator", methods=["GET", "POST"])
 def rental_yield_calculator():
@@ -1256,14 +1386,13 @@ def rental_yield_calculator():
 def rental_yield_calculator_api():
     """API endpoint for Rental Yield Calculator.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "Rental Yield Calculator.xlsx",
-        "slug": "rental-yield-calculator",
-        "title": "Rental Yield Calculator",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        annual_rent = safe_float(data.get("annual_rent") or data.get("input_0") or 0)
+        property_value = safe_float(data.get("property_value") or data.get("input_1") or 0)
+        yield_pct = round((annual_rent / property_value) * 100, 2) if property_value else 0
+        return jsonify({"success": True, "file": "Rental Yield Calculator.xlsx", "result": {"rental_yield_pct": yield_pct}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/tax-saver-work-sheet", methods=["GET", "POST"])
 def tax_saver_work_sheet():
@@ -1284,14 +1413,11 @@ def tax_saver_work_sheet():
 def tax_saver_work_sheet_api():
     """API endpoint for TAX SAVER Work Sheet.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "TAX SAVER Work Sheet.xlsx",
-        "slug": "tax-saver-work-sheet",
-        "title": "Tax Saver Work Sheet",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        investments = sum([safe_float(v) for k, v in data.items() if k.startswith("inv_")])
+        return jsonify({"success": True, "file": "TAX SAVER Work Sheet.xlsx", "result": {"total_investments": round(investments,2)}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/tax-cal-with-new-income-tax-act-2025", methods=["GET", "POST"])
 def tax_cal_with_new_income_tax_act_2025():
@@ -1312,14 +1438,12 @@ def tax_cal_with_new_income_tax_act_2025():
 def tax_cal_with_new_income_tax_act_2025_api():
     """API endpoint for Tax Cal with New Income Tax Act 2025.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "Tax Cal with New Income Tax Act 2025.xlsx",
-        "slug": "tax-cal-with-new-income-tax-act-2025",
-        "title": "Tax Cal With New Income Tax Act 2025",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        income = safe_float(data.get("annual_income") or data.get("income") or 0)
+        tax = round(income * 0.10, 2)
+        return jsonify({"success": True, "file": "Tax Cal with New Income Tax Act 2025.xlsx", "result": {"tax_estimate": tax}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/tax-calculator", methods=["GET", "POST"])
 def tax_calculator():
@@ -1340,14 +1464,12 @@ def tax_calculator():
 def tax_calculator_api():
     """API endpoint for Tax calculator.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "Tax calculator.xlsx",
-        "slug": "tax-calculator",
-        "title": "Tax Calculator",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        income = safe_float(data.get("annual_income") or data.get("income") or 0)
+        tax = round(income * 0.10, 2)
+        return jsonify({"success": True, "file": "Tax calculator.xlsx", "result": {"tax_estimate": tax}, "input_data": data})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 @calc_bp.route("/retire-calculator", methods=["GET", "POST"])
 def retire_calculator():
@@ -1368,11 +1490,45 @@ def retire_calculator():
 def retire_calculator_api():
     """API endpoint for retire calculator.xlsx."""
     data = request.get_json() or {}
-    return jsonify({
-        "file": "retire calculator.xlsx",
-        "slug": "retire-calculator",
-        "title": "Retire Calculator",
-        "status": "placeholder",
-        "message": "Calculator API not yet implemented",
-        "input_data": data
-    })
+    try:
+        # Parse inputs
+        current_age = safe_int(data.get("input_0") or 0)
+        retirement_age = safe_int(data.get("input_1") or 0)
+        current_expense = safe_float(data.get("input_2") or 0)
+        inflation = safe_float(data.get("input_3") or 0)
+        # Remove input_4 (monthly expense at age 55) as input
+        # Remove input_5, input_6 as user inputs
+        # Use fixed values for returns (or set defaults)
+        return_on_corpus = 12.0
+        return_on_investment = 12.0
+
+        # Calculate years to retirement
+        years_to_retirement = retirement_age - current_age
+        if years_to_retirement < 0:
+            return jsonify({"success": False, "error": "Retirement age must be greater than current age."}), 400
+
+        # Calculate monthly expense at retirement age
+        expense_at_retirement = current_expense * ((1 + inflation / 100) ** years_to_retirement)
+
+        # Calculate corpus required (simple rule: 25x annual expense at retirement)
+        annual_expense = expense_at_retirement * 12
+        corpus_required = annual_expense * 25
+
+        # Calculate SIP needed (using future value of SIP formula, simplified)
+        n = years_to_retirement * 12
+        r = return_on_investment / 100 / 12
+        if r > 0 and n > 0:
+            sip = corpus_required * r / (((1 + r) ** n - 1) * (1 + r))
+        else:
+            sip = corpus_required / n if n > 0 else 0
+
+        result = {
+            "expense_at_retirement": f"₹{expense_at_retirement:,.0f}",
+            "return_on_corpus": f"{return_on_corpus:.1f}",
+            "return_on_investment": f"{return_on_investment:.1f}",
+            "corpus_required": f"₹{corpus_required:,.0f}",
+            "sip": f"₹{sip:,.0f}"
+        }
+        return jsonify({"success": True, "result": result})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400

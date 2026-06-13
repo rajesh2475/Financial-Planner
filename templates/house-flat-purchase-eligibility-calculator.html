@@ -6,82 +6,42 @@
   <div class="card shadow-sm mb-4">
     <div class="card-header fw-semibold">House Flat Purchase Eligibility Calculator</div>
     <div class="card-body">
-      <p><strong>Source Excel File:</strong> House_Flat Purchase Eligibility Calculator.xlsx</p>
       <p>This calculator is automatically generated from the Excel workbook. Enter your inputs below to calculate results.</p>
       
-      <form id="calcForm" method="POST">
+      <form id="calcForm" method="POST" novalidate>
         <fieldset>
           <legend class="mb-3">Input Values</legend>
 
         <div class="form-group mb-3">
-          <label for="input_0" class="form-label">HOME LOAN EMI CALCULATOR</label>
-          <input type="number" class="form-control" id="input_0" name="input_0" placeholder="Enter home loan emi calculator">
+          <label for="input_0" class="form-label">Monthly Income (INR) <span class="text-danger">*</span></label>
+          <input type="number" class="form-control" id="input_0" name="input_0" placeholder="Enter your monthly income" required aria-required="true">
+          <small class="text-muted">Used to estimate eligibility. Eligibility = 5 x annual income by default.</small>
         </div>
+
         <div class="form-group mb-3">
-          <label for="input_1" class="form-label">HOME LAON EMI CLACULATOR</label>
-          <input type="number" class="form-control" id="input_1" name="input_1" placeholder="Enter home laon emi claculator">
+          <label for="input_6" class="form-label">Left After Expenses (Monthly, INR)</label>
+          <input type="number" class="form-control" id="input_6" name="input_6" placeholder="Optional: monthly surplus after expenses">
+          <small class="text-muted">Optional: if you provide disposable income after expenses we can refine eligibility.</small>
         </div>
-        <div class="form-group mb-3">
-          <label for="input_2" class="form-label">LOAN AMOUNT</label>
-          <input type="number" class="form-control" id="input_2" name="input_2" placeholder="Enter loan amount">
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">Calculate</button>
+          <button type="reset" class="btn btn-secondary">Clear</button>
+          <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary">Back to Home</a>
         </div>
-        <div class="form-group mb-3">
-          <label for="input_3" class="form-label">INTEREST RATE</label>
-          <input type="number" class="form-control" id="input_3" name="input_3" placeholder="Enter interest rate">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_4" class="form-label">TENURE IN YEARS</label>
-          <input type="number" class="form-control" id="input_4" name="input_4" placeholder="Enter tenure in years">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_5" class="form-label">EMI</label>
-          <input type="number" class="form-control" id="input_5" name="input_5" placeholder="Enter emi">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_6" class="form-label">LEFT OUT AFTER EXPENSES</label>
-          <input type="number" class="form-control" id="input_6" name="input_6" placeholder="Enter left out after expenses">
-        </div>
-        </fieldset>
-        
-        <button type="submit" class="btn btn-primary">Calculate</button>
-        <button type="reset" class="btn btn-secondary">Clear</button>
-        <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary">Back to Home</a>
       </form>
+
+      <div id="eligError" style="display:none;" class="alert alert-danger mt-3"></div>
+
+      <div id="resultsCard" class="card shadow-sm mt-4" style="display:none;">
+        <div class="card-header fw-semibold">Eligibility Result</div>
+        <div class="card-body">
+          <p class="mb-2">Estimated maximum loan eligibility based on income:</p>
+          <h4 id="result_eligibility">-</h4>
+        </div>
+      </div>
     </div>
   </div>
-
-  {% if result %}
-  <div class="card shadow-sm">
-    <div class="card-header fw-semibold">Results</div>
-    <div class="card-body">
-      <table class="table table-bordered">
-        <tbody>
-
-        <tr>
-          <th>HOME LOAN EMI CALCULATOR</th>
-          <td id="result_0">-</td>
-        </tr>
-        <tr>
-          <th>HOME LAON EMI CLACULATOR</th>
-          <td id="result_1">-</td>
-        </tr>
-        <tr>
-          <th>DOWN PAYMENT</th>
-          <td id="result_2">-</td>
-        </tr>
-        <tr>
-          <th>EMI</th>
-          <td id="result_3">-</td>
-        </tr>
-        <tr>
-          <th>TOTAL LIQUID ASSETS</th>
-          <td id="result_4">-</td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  {% endif %}
 
   {% if error %}
   <div class="alert alert-danger">{{ error }}</div>
@@ -89,28 +49,28 @@
 </div>
 
 <script>
-  document.getElementById("calcForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-    const data = Object.fromEntries(formData);
-    fetch("{{ url_for('calculators.house_flat_purchase_eligibility_calculator_api') }}", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(data)
-    })
-    .then(res => res.json())
-    .then(result => {
-      if (result.success) {
-        console.log("Calculation result:", result);
-        alert("Calculation submitted. Check console for details.");
-      } else {
-        alert("Error: " + (result.error || "Calculation failed"));
-      }
-    })
-    .catch(err => {
-      console.error("API error:", err);
-      alert("Failed to calculate: " + err.message);
-    });
+  function showEligError(msg){ const el=document.getElementById('eligError'); el.style.display='block'; el.textContent=msg; document.getElementById('resultsCard').style.display='none'; }
+  function clearEligError(){ const el=document.getElementById('eligError'); el.style.display='none'; el.textContent=''; }
+
+  document.getElementById('calcForm').addEventListener('submit', function(e){
+    e.preventDefault(); clearEligError();
+    const fd=new FormData(this); const data=Object.fromEntries(fd.entries());
+    // convert numeric
+    Object.keys(data).forEach(k=>{ const n=parseFloat(data[k]); if(!isNaN(n)) data[k]=n; });
+
+    if(!data.input_0 || Number(data.input_0) <= 0) { showEligError('Please enter your monthly income.'); return false; }
+
+    fetch("{{ url_for('calculators.house_flat_purchase_eligibility_calculator_api') }}", { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) })
+    .then(r=>r.json()).then(resp=>{
+      if(resp && resp.success){
+        const res = resp.result || resp;
+        const fmt = new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR'});
+        if(res.eligibility !== undefined) document.getElementById('result_eligibility').innerText = fmt.format(res.eligibility);
+        document.getElementById('resultsCard').style.display='block';
+      } else { showEligError((resp&&resp.error)?resp.error:'Calculation failed'); }
+    }).catch(err=>{ console.error('API error',err); showEligError('Failed to calculate: '+(err.message||err)); });
   });
+
+  document.getElementById('calcForm').addEventListener('reset', function(){ document.getElementById('resultsCard').style.display='none'; clearEligError(); });
 </script>
 {% endblock %}

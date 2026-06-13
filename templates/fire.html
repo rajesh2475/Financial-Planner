@@ -1,83 +1,240 @@
 {% extends "base.html" %}
-{% block title %}Fire{% endblock %}
+{% block title %}FIRE Calculator - Financial Independence, Retire Early{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
   <div class="card shadow-sm mb-4">
-    <div class="card-header fw-semibold">Fire</div>
+    <div class="card-header fw-semibold">FIRE Calculator</div>
     <div class="card-body">
-      <p><strong>Source Excel File:</strong> FIRE.xlsx</p>
-      <p>This calculator is automatically generated from the Excel workbook. Enter your inputs below to calculate results.</p>
+      <p>Calculate how much you need to achieve Financial Independence and Retire Early (FIRE).</p>
       
-      <form id="calcForm" method="POST">
-        <fieldset>
-          <legend class="mb-3">Input Values</legend>
+      {% if error %}
+      <div class="alert alert-danger alert-dismissible fade show">
+        <i class="fas fa-exclamation-circle"></i> {{ error }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      {% endif %}
 
-        <div class="form-group mb-3">
-          <label for="input_0" class="form-label">CURRENT AGE</label>
-          <input type="number" class="form-control" id="input_0" name="input_0" placeholder="Enter current age">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_1" class="form-label">CURRENT ANNUAL INCOME</label>
-          <input type="number" class="form-control" id="input_1" name="input_1" placeholder="Enter current annual income">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_2" class="form-label">EXPECTED GROWTH IN SALARY</label>
-          <input type="number" class="form-control" id="input_2" name="input_2" placeholder="Enter expected growth in salary">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_3" class="form-label">CURRENT ANNUAL EXPENSE</label>
-          <input type="number" class="form-control" id="input_3" name="input_3" placeholder="Enter current annual expense">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_4" class="form-label">CURRENT INVESTMENT</label>
-          <input type="number" class="form-control" id="input_4" name="input_4" placeholder="Enter current investment">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_5" class="form-label">FIRE @ AGE</label>
-          <input type="number" class="form-control" id="input_5" name="input_5" placeholder="Enter fire @ age">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_6" class="form-label">INVESTMENT TO REACH THE FIRE NUMBER</label>
-          <input type="number" class="form-control" id="input_6" name="input_6" placeholder="Enter investment to reach the fire number">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_7" class="form-label">Growth In Salary</label>
-          <input type="number" class="form-control" id="input_7" name="input_7" placeholder="Enter growth in salary">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_8" class="form-label">Increase in Expense</label>
-          <input type="number" class="form-control" id="input_8" name="input_8" placeholder="Enter increase in expense">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_9" class="form-label">Expected Return</label>
-          <input type="number" class="form-control" id="input_9" name="input_9" placeholder="Enter expected return">
-        </div>
+      <form id="fireForm" method="POST" onsubmit="return validateFireForm(event)">
+        <fieldset>
+          <legend class="mb-3">Your Current Situation <span class="text-danger">*</span></legend>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="current_age" class="form-label">
+                  <span class="text-danger">*</span> Current Age
+                </label>
+                <input type="number" id="current_age" name="input_0" value="{{ form.input_0 or '' }}"
+                       class="form-control" min="18" max="100" placeholder="e.g., 35" oninput="clearError(this)">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="fire_age" class="form-label">
+                  <span class="text-danger">*</span> Target FIRE Age
+                </label>
+                <input type="number" id="fire_age" name="input_5" value="{{ form.input_5 or '' }}"
+                       class="form-control" min="25" max="100" placeholder="e.g., 45" oninput="clearError(this)">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="current_income" class="form-label">
+                  <span class="text-danger">*</span> Annual Income (₹)
+                </label>
+                <input type="number" id="current_income" name="input_1" value="{{ form.input_1 or '' }}"
+                       class="form-control" min="0" step="10000" placeholder="e.g., 15,00,000" oninput="clearError(this)">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="annual_expense" class="form-label">
+                  <span class="text-danger">*</span> Annual Expense (₹)
+                </label>
+                <input type="number" id="annual_expense" name="input_3" value="{{ form.input_3 or '' }}"
+                       class="form-control" min="0" step="10000" placeholder="e.g., 8,00,000" oninput="clearError(this)">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="current_investment" class="form-label">
+                  <span class="text-danger">*</span> Current Investment (₹)
+                </label>
+                <input type="number" id="current_investment" name="input_4" value="{{ form.input_4 or '' }}"
+                       class="form-control" min="0" step="10000" placeholder="e.g., 30,00,000" oninput="clearError(this)">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="salary_growth" class="form-label">
+                  <span class="text-danger">*</span> Annual Salary Growth (%)
+                </label>
+                <input type="number" id="salary_growth" name="input_2" value="{{ form.input_2 or '5' }}"
+                       class="form-control" min="0" max="30" step="0.5" placeholder="e.g., 5%" oninput="clearError(this)">
+                <small class="text-muted">Expected annual salary increase</small>
+              </div>
+            </div>
+          </div>
         </fieldset>
-        
-        <button type="submit" class="btn btn-primary">Calculate</button>
-        <button type="reset" class="btn btn-secondary">Clear</button>
-        <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary">Back to Home</a>
+
+        <fieldset>
+          <legend class="mb-3">Investment Returns <span class="text-danger">*</span></legend>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="earning_return" class="form-label">
+                  <span class="text-danger">*</span> Annual Return While Earning (%)
+                </label>
+                <input type="number" id="earning_return" name="input_9" value="{{ form.input_9 or '10' }}"
+                       class="form-control" min="0" max="30" step="0.5" placeholder="e.g., 10%"  oninput="clearError(this)">
+                <small class="text-muted">Typical: 8-12% (equity portfolio)</small>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="expense_inflation" class="form-label">
+                  <span class="text-danger">*</span> Annual Expense Growth (%)
+                </label>
+                <input type="number" id="expense_inflation" name="input_8" value="{{ form.input_8 or '5' }}"
+                       class="form-control" min="0" max="20" step="0.5" placeholder="e.g., 5%"  oninput="clearError(this)">
+                <small class="text-muted">Due to inflation, typical: 5-7%</small>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary"><i class="fas fa-calculator"></i> Calculate FIRE</button>
+          <button type="reset" class="btn btn-secondary">Clear</button>
+          <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary"><i class="fas fa-home"></i> Back</a>
+        </div>
       </form>
     </div>
   </div>
 
+  <!-- Results Section -->
   {% if result %}
-  <div class="card shadow-sm">
-    <div class="card-header fw-semibold">Results</div>
+  <div class="card shadow-sm mt-4">
+    <div class="card-header fw-semibold bg-success text-white">
+      <i class="fas fa-fire"></i> Your FIRE Plan
+    </div>
     <div class="card-body">
-      <table class="table table-bordered">
-        <tbody>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <div class="bg-light p-3 rounded">
+            <p class="text-muted small mb-1">Years to FIRE</p>
+            <h3 class="text-primary">{{ (result.get('fire_age', 0) - result.get('current_age', 0))|int }} Years</h3>
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <div class="bg-light p-3 rounded">
+            <p class="text-muted small mb-1">FIRE Corpus Needed</p>
+            <h3 class="text-success">₹ {{ "{:,.0f}".format(result.get('fire_corpus', 0)) }}</h3>
+          </div>
+        </div>
+      </div>
 
-        <tr>
-          <th>Initial Corpus</th>
-          <td id="result_0">-</td>
-        </tr>
-        </tbody>
-      </table>
+      <div class="row mt-2">
+        <div class="col-md-6 mb-3">
+          <div class="bg-light p-3 rounded">
+            <p class="text-muted small mb-1">Current Investment Progress</p>
+            <h3 class="text-info">{{ "{:.1f}".format((result.get('current_investment', 0) / max(result.get('fire_corpus', 1), 1)) * 100) }}%</h3>
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <div class="bg-light p-3 rounded">
+            <p class="text-muted small mb-1">Annual Savings Needed</p>
+            <h3 class="text-warning">₹ {{ "{:,.0f}".format(result.get('annual_investment', 0)) }}</h3>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   {% endif %}
+</div>
+
+<script>
+function clearError(element) {
+  element.classList.remove('is-invalid');
+}
+
+function setError(element, message) {
+  element.classList.add('is-invalid');
+}
+
+function validateFireForm(event) {
+  const currentAge = document.getElementById('current_age');
+  const fireAge = document.getElementById('fire_age');
+  const income = document.getElementById('current_income');
+  const expense = document.getElementById('annual_expense');
+  const investment = document.getElementById('current_investment');
+  
+  let isValid = true;
+  
+  if (!currentAge.value || parseInt(currentAge.value) < 18) {
+    setError(currentAge, 'Please enter a valid current age (18+)');
+    isValid = false;
+  } else {
+    clearError(currentAge);
+  }
+  
+  if (!fireAge.value || parseInt(fireAge.value) <= parseInt(currentAge.value || 0)) {
+    setError(fireAge, 'FIRE age must be greater than current age');
+    isValid = false;
+  } else {
+    clearError(fireAge);
+  }
+  
+  if (!income.value || parseFloat(income.value) <= 0) {
+    setError(income, 'Please enter annual income');
+    isValid = false;
+  } else {
+    clearError(income);
+  }
+  
+  if (!expense.value || parseFloat(expense.value) <= 0) {
+    setError(expense, 'Please enter annual expense');
+    isValid = false;
+  } else {
+    clearError(expense);
+  }
+  
+  if (parseFloat(expense.value) > parseFloat(income.value)) {
+    setError(expense, 'Annual expense cannot be more than annual income');
+    isValid = false;
+  }
+  
+  if (!investment.value || parseFloat(investment.value) < 0) {
+    setError(investment, 'Please enter current investment amount');
+    isValid = false;
+  } else {
+    clearError(investment);
+  }
+  
+  if (!isValid) {
+    event.preventDefault();
+    return false;
+  }
+  
+  return true;
+}
+</script>
+
+<style>
+.is-invalid {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+</style>
+
 
   {% if error %}
   <div class="alert alert-danger">{{ error }}</div>

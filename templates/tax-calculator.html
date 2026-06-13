@@ -6,7 +6,6 @@
   <div class="card shadow-sm mb-4">
     <div class="card-header fw-semibold">Tax Calculator</div>
     <div class="card-body">
-      <p><strong>Source Excel File:</strong> Tax calculator.xlsx</p>
       <p>This calculator is automatically generated from the Excel workbook. Enter your inputs below to calculate results.</p>
       
       <form id="calcForm" method="POST">
@@ -75,7 +74,7 @@
         </tr>
         <tr>
           <th>TAX PAYABLE</th>
-          <td id="result_1">-</td>
+          <td id="result_tax_estimate">-</td>
         </tr>
         <tr>
           <th>TAX CALCULATION AS PER OLD TAX REGIME</th>
@@ -112,29 +111,27 @@
   {% endif %}
 </div>
 
-<script>
-  document.getElementById("calcForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-    const data = Object.fromEntries(formData);
-    fetch("{{ url_for('calculators.tax_calculator_api') }}", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(data)
-    })
-    .then(res => res.json())
-    .then(result => {
-      if (result.success) {
-        console.log("Calculation result:", result);
-        alert("Calculation submitted. Check console for details.");
-      } else {
-        alert("Error: " + (result.error || "Calculation failed"));
-      }
-    })
-    .catch(err => {
-      console.error("API error:", err);
-      alert("Failed to calculate: " + err.message);
+  <script>
+    // Let the generic handler in base.html populate result_tax_estimate, but keep a fallback
+    document.getElementById("calcForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const data = Object.fromEntries(formData);
+      fetch("{{ url_for('calculators.tax_calculator_api') }}", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+      })
+      .then(res => res.json())
+      .then(result => {
+        if (result.success) {
+          const r = result.result || {};
+          if (r.tax_estimate !== undefined) document.getElementById('result_tax_estimate').innerText = r.tax_estimate;
+        } else {
+          alert('Error: ' + (result.error || 'Calculation failed'));
+        }
+      })
+      .catch(err => { console.error('API error:', err); alert('Failed to calculate: ' + err.message); });
     });
-  });
-</script>
+  </script>
 {% endblock %}

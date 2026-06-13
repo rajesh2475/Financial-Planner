@@ -2,107 +2,248 @@
 {% block title %}Retirement Corpus Calculator{% endblock %}
 
 {% block content %}
-<div class="card shadow-sm mb-4">
-  <div class="card-header fw-semibold">Retirement Inputs</div>
-  <div class="card-body">
-    <form method="POST" action="{{ url_for('retire.retire_calculator') }}">
-      <table class="table table-bordered">
-        <tr>
-          <th>
-            Current Age
-            <span data-toggle="tooltip" title="Your present age. Used to calculate years left until retirement.">
-              <i class="fas fa-info-circle text-muted"></i>
-            </span>
-          </th>
-          <td><input type="number" name="current_age" value="{{ form.current_age }}" class="form-control"></td>
-        </tr>
-        <tr>
-          <th>
-            Retirement Planned Age
-            <span data-toggle="tooltip" title="The age at which you plan to retire. Determines when expenses start drawing from corpus.">
-              <i class="fas fa-info-circle text-muted"></i>
-            </span>
-          </th>
-          <td><input type="number" name="retirement_age" value="{{ form.retirement_age }}" class="form-control"></td>
-        </tr>
-        <tr>
-          <th>
-            Life Expectancy
-            <span data-toggle="tooltip" title="The age until which you expect to live. Used to calculate retirement duration.">
-              <i class="fas fa-info-circle text-muted"></i>
-            </span>
-          </th>
-          <td><input type="number" name="life_expectancy" value="{{ form.life_expectancy }}" class="form-control"></td>
-        </tr>
-        <tr>
-          <th>
-            Current Monthly Expense
-            <span data-toggle="tooltip" title="Your current monthly household expenses. Forms the basis for future expense projections.">
-              <i class="fas fa-info-circle text-muted"></i>
-            </span>
-          </th>
-          <td><input type="number" name="monthly_expense_now" value="{{ form.monthly_expense_now }}" class="form-control"></td>
-        </tr>
-        <tr>
-          <th>
-            Inflation (%)
-            <span data-toggle="tooltip" title="Expected average inflation rate. Used to project higher expenses at retirement.">
-              <i class="fas fa-info-circle text-muted"></i>
-            </span>
-          </th>
-          <td>
-            <div class="input-group">
-              <input type="number" step="0.01" max="100" name="inflation" value="{{ form.inflation }}" class="form-control">
-              <span class="input-group-text">%</span>
+<div class="container mt-4">
+  <div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold">Retirement Planning Calculator</div>
+    <div class="card-body">
+      <p>Calculate how much you need to save for a comfortable retirement.</p>
+      
+      {% if error %}
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle"></i> <strong>Error:</strong> {{ error }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      {% endif %}
+
+      <form id="calcForm" method="POST" action="{{ url_for('retire.retire_calculator') }}" onsubmit="return validateRetireForm(event)">
+        <fieldset>
+          <legend class="mb-3">Your Information <span class="text-danger">*</span> = Required</legend>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="current_age" class="form-label">
+                  <span class="text-danger">*</span> Current Age
+                </label>
+                  <input type="number" id="current_age" name="current_age" value="{{ form.current_age or '' }}" 
+                    class="form-control" min="18" max="100" placeholder="e.g., 35" oninput="clearError(this)" required aria-required="true">
+                <small class="text-muted">Your present age</small>
+              </div>
             </div>
-          </td>
-        </tr>
-        <tr>
-          <th>
-            Expected Return on Corpus (%)
-            <span data-toggle="tooltip" title="Return earned on your retirement corpus after retirement, usually from safer investments like debt funds or annuities.">
-              <i class="fas fa-info-circle text-muted"></i>
-            </span>
-          </th>
-          <td>
-            <div class="input-group">
-              <input type="number" step="0.01" max="100" name="return_on_corpus" value="{{ form.return_on_corpus }}" class="form-control">
-              <span class="input-group-text">%</span>
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="retirement_age" class="form-label">
+                  <span class="text-danger">*</span> Target Retirement Age
+                </label>
+                  <input type="number" id="retirement_age" name="retirement_age" value="{{ form.retirement_age or '' }}"
+                    class="form-control" min="25" max="100" placeholder="e.g., 60" oninput="clearError(this)" required aria-required="true">
+                <small class="text-muted">Age when you want to retire</small>
+              </div>
             </div>
-          </td>
-        </tr>
-        <tr>
-          <th>
-            Expected Return on Investment (%)
-            <span data-toggle="tooltip" title="Return expected during your working years while building the corpus, usually from equity or growth-oriented investments.">
-              <i class="fas fa-info-circle text-muted"></i>
-            </span>
-          </th>
-          <td>
-            <div class="input-group">
-              <input type="number" step="0.01" max="100" name="return_on_investment" value="{{ form.return_on_investment }}" class="form-control">
-              <span class="input-group-text">%</span>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="life_expectancy" class="form-label">
+                  <span class="text-danger">*</span> Life Expectancy
+                </label>
+                  <input type="number" id="life_expectancy" name="life_expectancy" value="{{ form.life_expectancy or '' }}"
+                    class="form-control" min="50" max="120" placeholder="e.g., 85" oninput="clearError(this)" required aria-required="true">
+                <small class="text-muted">Expected age to live until</small>
+              </div>
             </div>
-          </td>
-        </tr>
-      </table>
-      <button type="submit" class="btn btn-primary">Calculate</button>
-    </form>
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="monthly_expense_now" class="form-label">
+                  <span class="text-danger">*</span> Current Monthly Expenses (₹)
+                </label>
+                  <input type="number" id="monthly_expense_now" name="monthly_expense_now" value="{{ form.monthly_expense_now or '' }}"
+                    class="form-control" min="0" step="1000" placeholder="e.g., 50000" oninput="clearError(this)" required aria-required="true">
+                <small class="text-muted">Your current monthly spending</small>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend class="mb-3">Financial Assumptions <span class="text-danger">*</span> = Required</legend>
+
+          <div class="row">
+            <div class="col-md-4">
+              <div class="form-group mb-3">
+                <label for="inflation" class="form-label">
+                  <span class="text-danger">*</span> Annual Inflation Rate (%)
+                </label>
+                  <input type="number" id="inflation" name="inflation" value="{{ form.inflation or '6' }}" step="0.01"
+                    class="form-control" min="0" max="20" oninput="clearError(this)" required aria-required="true">
+                <small class="text-muted">Expected inflation (typical: 5-7%)</small>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group mb-3">
+                <label for="return_on_investment" class="form-label">
+                  <span class="text-danger">*</span> Return During Earning Years (%)
+                </label>
+                  <input type="number" id="return_on_investment" name="return_on_investment" value="{{ form.return_on_investment or '10' }}" step="0.01"
+                    class="form-control" min="0" max="30" oninput="clearError(this)" required aria-required="true">
+                <small class="text-muted">Typical: 8-12% (equity)</small>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group mb-3">
+                <label for="return_on_corpus" class="form-label">
+                  <span class="text-danger">*</span> Return During Retirement (%)
+                </label>
+                  <input type="number" id="return_on_corpus" name="return_on_corpus" value="{{ form.return_on_corpus or '6' }}" step="0.01"
+                    class="form-control" min="0" max="20" oninput="clearError(this)" required aria-required="true">
+                <small class="text-muted">Typical: 4-7% (debt/balanced)</small>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary"><i class="fas fa-calculator"></i> Calculate</button>
+          <button type="reset" class="btn btn-secondary" onclick="document.getElementById('resultsSection').style.display='none';">Clear</button>
+          <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary"><i class="fas fa-home"></i> Back</a>
+        </div>
+      </form>
+    </div>
   </div>
+
+  <!-- Results Section -->
+  {% if result %}
+  <div id="resultsSection" class="card shadow-sm mt-4">
+    <div class="card-header fw-semibold bg-success text-white">
+      <i class="fas fa-check-circle"></i> Retirement Plan Summary
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <div class="bg-light p-3 rounded">
+            <p class="text-muted small mb-1">Years Left to Retire</p>
+            <h3 class="text-primary">{{ result.years_to_retire }} years</h3>
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <div class="bg-light p-3 rounded">
+            <p class="text-muted small mb-1">Monthly Expense at Retirement</p>
+            <h3 class="text-info">₹ {{ "{:,.0f}".format(result.monthly_expense_at_retirement) }}</h3>
+          </div>
+        </div>
+      </div>
+      
+      <div class="row mt-2">
+        <div class="col-md-6 mb-3">
+          <div class="bg-light p-3 rounded border-left border-success">
+            <p class="text-muted small mb-1">Total Corpus Required</p>
+            <h3 class="text-success">₹ {{ "{:,.0f}".format(result.corpus_required) }}</h3>
+          </div>
+        </div>
+        <div class="col-md-6 mb-3">
+          <div class="bg-light p-3 rounded border-left border-warning">
+            <p class="text-muted small mb-1">Monthly SIP Needed</p>
+            <h3 class="text-warning">₹ {{ "{:,.0f}".format(result.sip_to_be_invested) }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
 </div>
 
+<script>
+function clearError(element) {
+  element.classList.remove('is-invalid');
+}
 
-{% if result %}
-<div class="card shadow-sm">
-  <div class="card-header fw-semibold">Retirement Corpus Summary</div>
-  <div class="card-body">
-    <table class="table table-bordered">
-      <tr><th>Years Left to Retire</th><td>{{ result.years_to_retire }}</td></tr>
-      <tr><th>Monthly Expense at Retirement</th><td>₹{{ result.monthly_expense_at_retirement }}</td></tr>
-      <tr><th>Corpus Required</th><td>₹{{ result.corpus_required }}</td></tr>
-      <tr><th>SIP to be Invested</th><td>₹{{ result.sip_to_be_invested }}</td></tr>
-    </table>
-  </div>
-</div>
-{% endif %}
-{% endblock %}
+function setError(element, message) {
+  element.classList.add('is-invalid');
+  const form = element.closest('form');
+  let alert = form.querySelector('.alert-danger');
+  if (!alert) {
+    alert = document.createElement('div');
+    alert.className = 'alert alert-danger alert-dismissible fade show mt-3';
+    alert.innerHTML = `<i class="fas fa-exclamation-circle"></i> <strong>Error:</strong> <span id="errorMsg"></span>
+                       <button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+    form.parentElement.insertBefore(alert, form);
+  }
+  alert.querySelector('#errorMsg').textContent = message;
+  alert.style.display = 'block';
+}
+
+function validateRetireForm(event) {
+  const currentAge = document.getElementById('current_age');
+  const retireAge = document.getElementById('retirement_age');
+  const lifeExp = document.getElementById('life_expectancy');
+  const monthlyExp = document.getElementById('monthly_expense_now');
+  const inflation = document.getElementById('inflation');
+  const roi = document.getElementById('return_on_investment');
+  const roc = document.getElementById('return_on_corpus');
+  
+  let isValid = true;
+  
+  if (!currentAge.value || parseInt(currentAge.value) < 18 || parseInt(currentAge.value) > 100) {
+    setError(currentAge, 'Please enter a valid current age (18-100)');
+    isValid = false;
+  }
+  
+  if (!retireAge.value || parseInt(retireAge.value) <= parseInt(currentAge.value || 0)) {
+    setError(retireAge, 'Retirement age must be greater than current age');
+    isValid = false;
+  }
+  
+  if (!lifeExp.value || parseInt(lifeExp.value) <= parseInt(retireAge.value || 0)) {
+    setError(lifeExp, 'Life expectancy must be greater than retirement age');
+    isValid = false;
+  }
+  
+  if (!monthlyExp.value || parseFloat(monthlyExp.value) <= 0) {
+    setError(monthlyExp, 'Please enter a valid monthly expense amount');
+    isValid = false;
+  }
+  
+  if (!inflation.value || parseFloat(inflation.value) < 0 || parseFloat(inflation.value) > 20) {
+    setError(inflation, 'Inflation rate should be between 0-20%');
+    isValid = false;
+  }
+  
+  if (!roi.value || parseFloat(roi.value) < 0 || parseFloat(roi.value) > 30) {
+    setError(roi, 'Return rate should be between 0-30%');
+    isValid = false;
+  }
+  
+  if (!roc.value || parseFloat(roc.value) < 0 || parseFloat(roc.value) > 20) {
+    setError(roc, 'Corpus return should be between 0-20%');
+    isValid = false;
+  }
+  
+  if (!isValid) {
+    event.preventDefault();
+    return false;
+  }
+  
+  return true;
+}
+</script>
+
+<style>
+.is-invalid {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.alert-danger {
+  border-left: 4px solid #dc3545;
+}
+
+.border-left {
+  border-left: 4px solid;
+}
+
+#resultsSection {
+  border-top: 3px solid #198754;
+}
+</style>
+

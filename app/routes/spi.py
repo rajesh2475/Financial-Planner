@@ -99,24 +99,37 @@ def api_stepup():
         return render_template("incremental_sip.html", form=form_data, result=None)
 
     if request.method == "POST":
-        # Collect form inputs (from HTML form submission)
+        # Handle both JSON and form-encoded requests
         try:
-            planned_monthly_investment = safe_float(request.form.get("plannedMonthlyInvestment", 0))
-            years_of_investment = int(request.form.get("yearsOfInvestment", 0))
-            annual_return = safe_float(request.form.get("annualReturn", 0)) / 100
-            holding_years = safe_int(request.form.get("holdingYears", 0))
+            if request.is_json:
+                data = request.get_json()
+                planned_monthly_investment = safe_float(data.get("plannedMonthlyInvestment", 0))
+                years_of_investment = int(data.get("yearsOfInvestment", 0))
+                annual_return = safe_float(data.get("annualReturn", 0)) / 100
+                holding_years = safe_int(data.get("holdingYears", 0))
+                mode = data.get("mode", "percent")
+                increment_value = safe_float(data.get("incrementValue", 0))
+                
+                # For JSON, if mode is "value", don't divide by 100
+                if mode == "percent":
+                    increment_value = increment_value / 100
+            else:
+                # Form-encoded request
+                planned_monthly_investment = safe_float(request.form.get("plannedMonthlyInvestment", 0))
+                years_of_investment = int(request.form.get("yearsOfInvestment", 0))
+                annual_return = safe_float(request.form.get("annualReturn", 0)) / 100
+                holding_years = safe_int(request.form.get("holdingYears", 0))
+                mode = request.form.get("mode", "percent")
+                increment_value = safe_float(request.form.get("incrementValue", 0)) / 100
 
-            mode = request.form.get("mode", "percent")
             if mode not in ("percent", "value"):
-                return jsonify({"error": "mode must be 'percent' or 'value'"}), 400
-
-            increment_value = safe_float(request.form.get("incrementValue", 0)) / 100
+                return jsonify({"success": False, "error": "mode must be 'percent' or 'value'"}), 400
 
             # Validations
             if planned_monthly_investment < 0 or years_of_investment < 0 or annual_return < 0:
-                return jsonify({"error": "Inputs must be non-negative"}), 400
+                return jsonify({"success": False, "error": "Inputs must be non-negative"}), 400
             if mode == "percent" and increment_value < -1:
-                return jsonify({"error": "Percent increment cannot be less than -100%"}), 400
+                return jsonify({"success": False, "error": "Percent increment cannot be less than -100%"}), 400
 
             result = stepup_sip_schedule(
                 planned_monthly_investment=planned_monthly_investment,
@@ -127,20 +140,34 @@ def api_stepup():
                 holding_years=holding_years
             )
 
-            annual_return = annual_return * 100  # Convert back to percentage for display
-            if mode == "percent":
-                increment_value = increment_value * 100  # Convert back to percentage for display
+            annual_return_display = annual_return * 100  # Convert back to percentage for display
+            increment_display = increment_value * 100 if mode == "percent" else increment_value
+
+            # If JSON request, return JSON response
+            if request.is_json:
+                return jsonify({
+                    "success": True,
+                    "summary": {
+                        "final_value": f"₹{result['summary']['final_value']:,.2f}",
+                        "total_invested": f"₹{result['summary']['total_invested']:,.2f}",
+                        "gain": f"₹{result['summary']['gain']:,.2f}"
+                    },
+                    "schedule": result['schedule']
+                })
+            
+            # Otherwise render template
             form_data = {
                 "plannedMonthlyInvestment": planned_monthly_investment,
                 "yearsOfInvestment": years_of_investment,
-                "annualReturn": annual_return,
-                "incrementValue": increment_value,
+                "annualReturn": annual_return_display,
+                "incrementValue": increment_display,
                 "mode": mode,
                 "holdingYears": holding_years
             }
-
             return render_template("incremental_sip.html", form=form_data, result=result)
-        except (TypeError, ValueError):
+        except (TypeError, ValueError) as e:
+            if request.is_json:
+                return jsonify({"success": False, "error": str(e)}), 400
             return jsonify({"error": "Invalid input"}), 400
 
       

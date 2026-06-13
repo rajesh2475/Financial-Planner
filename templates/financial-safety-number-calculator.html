@@ -6,86 +6,106 @@
   <div class="card shadow-sm mb-4">
     <div class="card-header fw-semibold">Financial Safety Number Calculator</div>
     <div class="card-body">
-      <p><strong>Source Excel File:</strong> FINANCIAL SAFETY NUMBER CALCULATOR.xlsx</p>
       <p>This calculator is automatically generated from the Excel workbook. Enter your inputs below to calculate results.</p>
       
-      <form id="calcForm" method="POST">
+      <form id="calcForm" method="POST" novalidate>
         <fieldset>
           <legend class="mb-3">Input Values</legend>
 
         <div class="form-group mb-3">
-          <label for="input_0" class="form-label">RETIREMENT</label>
-          <input type="number" class="form-control" id="input_0" name="input_0" placeholder="Enter retirement">
+          <label for="input_0" class="form-label">RETIREMENT <span class="text-danger">*</span></label>
+          <input type="number" class="form-control" id="input_0" name="input_0" placeholder="Enter retirement age (e.g. 60)" required aria-required="true">
+          <small class="text-muted">Age at which you plan to retire (years).</small>
         </div>
+
         <div class="form-group mb-3">
-          <label for="input_1" class="form-label">RETIREMENT OF MR & MRS</label>
-          <input type="number" class="form-control" id="input_1" name="input_1" placeholder="Enter retirement of mr & mrs">
+          <label for="input_1" class="form-label">RETIREMENT OF MR &amp; MRS</label>
+          <input type="number" class="form-control" id="input_1" name="input_1" placeholder="Enter spouse retirement age (optional)">
+          <small class="text-muted">If applicable, retirement age of the partner (optional).</small>
         </div>
+
         <div class="form-group mb-3">
-          <label for="input_2" class="form-label">PRESENT AGE</label>
-          <input type="number" class="form-control" id="input_2" name="input_2" placeholder="Enter present age">
+          <label for="input_2" class="form-label">PRESENT AGE <span class="text-danger">*</span></label>
+          <input type="number" class="form-control" id="input_2" name="input_2" placeholder="Enter your current age" required aria-required="true">
+          <small class="text-muted">Your current age in years.</small>
         </div>
+
         <div class="form-group mb-3">
           <label for="input_3" class="form-label">PRESENT CHILD AGE</label>
-          <input type="number" class="form-control" id="input_3" name="input_3" placeholder="Enter present child age">
+          <input type="number" class="form-control" id="input_3" name="input_3" placeholder="Enter child current age (optional)">
+          <small class="text-muted">If you want calculations covering children's needs, enter child's age.</small>
         </div>
+
         <div class="form-group mb-3">
           <label for="input_4" class="form-label">WISH TO DELAY RETIREMENT TILL AGE</label>
-          <input type="number" class="form-control" id="input_4" name="input_4" placeholder="Enter wish to delay retirement till age">
+          <input type="number" class="form-control" id="input_4" name="input_4" placeholder="Optional: deferred retirement age">
+          <small class="text-muted">If you may delay retirement, enter the later age here (optional).</small>
         </div>
+
         <div class="form-group mb-3">
           <label for="input_5" class="form-label">EXPECTED INFLATION OF THE TOTAL TOUR</label>
-          <input type="number" class="form-control" id="input_5" name="input_5" placeholder="Enter expected inflation of the total tour">
+          <input type="number" class="form-control" id="input_5" name="input_5" placeholder="Enter expected inflation rate for travel (e.g. 6)" step="0.1">
+          <small class="text-muted">Percentage inflation applied to travel/tour expenses (percent per year).</small>
         </div>
+
         <div class="form-group mb-3">
-          <label for="input_6" class="form-label">PRESENT EXPENSES</label>
-          <input type="number" class="form-control" id="input_6" name="input_6" placeholder="Enter present expenses">
+          <label for="input_6" class="form-label">PRESENT EXPENSES <span class="text-danger">*</span></label>
+          <input type="number" class="form-control" id="input_6" name="input_6" placeholder="Enter your current monthly expenses (₹)" required aria-required="true">
+          <small class="text-muted">Your current monthly household expenses in INR.</small>
         </div>
+
         <div class="form-group mb-3">
-          <label for="input_7" class="form-label">EXPECTED INFLATION</label>
-          <input type="number" class="form-control" id="input_7" name="input_7" placeholder="Enter expected inflation">
+          <label for="input_7" class="form-label">EXPECTED INFLATION <span class="text-danger">*</span></label>
+          <input type="number" class="form-control" id="input_7" name="input_7" placeholder="Expected general inflation rate (e.g. 6)" step="0.1" required aria-required="true">
+          <small class="text-muted">General annual inflation percentage used for projecting future costs.</small>
         </div>
+
         <div class="form-group mb-3">
           <label for="input_8" class="form-label">EXPECTED INFLATION OF PROPERTY</label>
-          <input type="number" class="form-control" id="input_8" name="input_8" placeholder="Enter expected inflation of property">
+          <input type="number" class="form-control" id="input_8" name="input_8" placeholder="Enter expected inflation for property (percent)" step="0.1">
+          <small class="text-muted">Use if you want property inflation considered separately (optional).</small>
         </div>
+
         <div class="form-group mb-3">
           <label for="input_9" class="form-label">EXPECTED INFLATION OF VEHICLE</label>
-          <input type="number" class="form-control" id="input_9" name="input_9" placeholder="Enter expected inflation of vehicle">
+          <input type="number" class="form-control" id="input_9" name="input_9" placeholder="Enter expected vehicle inflation (percent)" step="0.1">
+          <small class="text-muted">Separate inflation for vehicle-related costs (optional).</small>
         </div>
         </fieldset>
         
-        <button type="submit" class="btn btn-primary">Calculate</button>
-        <button type="reset" class="btn btn-secondary">Clear</button>
-        <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary">Back to Home</a>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">Calculate</button>
+          <button type="reset" class="btn btn-secondary">Clear</button>
+          <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary">Back to Home</a>
+        </div>
       </form>
+
+      <div id="calcError" style="display:none;" class="alert alert-danger mt-3"></div>
+
+      <!-- Results Card (client-populated) -->
+      <div id="resultsCard" class="card shadow-sm mt-4" style="display:none;">
+        <div class="card-header fw-semibold">Results</div>
+        <div class="card-body">
+          <table class="table table-bordered">
+            <tbody>
+            <tr>
+              <th>EXPECTED INFLATION OF THE TOTAL TOUR</th>
+              <td id="result_0">-</td>
+            </tr>
+            <tr>
+              <th>CORPUS REQUIRED TO MEET THE GOAL</th>
+              <td id="result_1">-</td>
+            </tr>
+            <tr>
+              <th>CORPUS REQUIRED AT RETIREMENT</th>
+              <td id="result_2">-</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
-
-  {% if result %}
-  <div class="card shadow-sm">
-    <div class="card-header fw-semibold">Results</div>
-    <div class="card-body">
-      <table class="table table-bordered">
-        <tbody>
-
-        <tr>
-          <th>EXPECTED INFLATION OF THE TOTAL TOUR</th>
-          <td id="result_0">-</td>
-        </tr>
-        <tr>
-          <th>CORPUS REQUIRED TO MEET THE GOAL</th>
-          <td id="result_1">-</td>
-        </tr>
-        <tr>
-          <th>CORPUS REQUIRED AT RETIREMENT</th>
-          <td id="result_2">-</td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  {% endif %}
 
   {% if error %}
   <div class="alert alert-danger">{{ error }}</div>
@@ -93,28 +113,95 @@
 </div>
 
 <script>
+  function showCalcError(msg) {
+    const el = document.getElementById('calcError');
+    el.style.display = 'block';
+    el.textContent = msg;
+    document.getElementById('resultsCard').style.display = 'none';
+  }
+
+  function clearCalcError() {
+    const el = document.getElementById('calcError');
+    el.style.display = 'none';
+    el.textContent = '';
+  }
+
+  function validateFinancialSafetyForm() {
+    clearCalcError();
+    const required = ['input_0','input_2','input_6','input_7'];
+    for (const id of required) {
+      const el = document.getElementById(id);
+      if (!el) continue;
+      if (!el.value || el.value.trim() === '') {
+        showCalcError('Please fill all required fields marked with *');
+        el.focus();
+        return false;
+      }
+    }
+    // Basic sanity checks
+    const age = parseInt(document.getElementById('input_2').value, 10);
+    const retire = parseInt(document.getElementById('input_0').value, 10);
+    if (!Number.isNaN(age) && !Number.isNaN(retire) && retire <= age) {
+      showCalcError('Retirement age should be greater than your present age.');
+      return false;
+    }
+    return true;
+  }
+
   document.getElementById("calcForm").addEventListener("submit", function(e) {
     e.preventDefault();
+    if (!validateFinancialSafetyForm()) return false;
+
     const formData = new FormData(this);
-    const data = Object.fromEntries(formData);
+    const dataObj = {};
+    for (const [k,v] of formData.entries()) {
+      // convert numeric-looking values to numbers
+      const num = parseFloat(v);
+      dataObj[k] = (v === '' || Number.isNaN(num)) ? v : num;
+    }
+
     fetch("{{ url_for('calculators.financial_safety_number_calculator_api') }}", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(data)
+      body: JSON.stringify(dataObj)
     })
     .then(res => res.json())
-    .then(result => {
-      if (result.success) {
-        console.log("Calculation result:", result);
-        alert("Calculation submitted. Check console for details.");
+    .then(payload => {
+      if (payload && payload.success) {
+        clearCalcError();
+        const res = payload.result || payload;
+        // Show expected inflation for tour if present (input_5) or from result
+        const tourInflation = (payload.input_data && payload.input_data.input_5) || res.expected_inflation_of_the_total_tour || '-';
+        document.getElementById('result_0').innerText = tourInflation !== '' ? tourInflation : '-';
+
+        // If API returned a safety number, show it as the corpus required fields
+        if (res.safety_number !== undefined) {
+          const fmt = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 });
+          const val = fmt.format(res.safety_number);
+          document.getElementById('result_1').innerText = val;
+          document.getElementById('result_2').innerText = val;
+        } else {
+          document.getElementById('result_1').innerText = res[1] ?? res.corpus_required_to_meet_the_goal ?? '-';
+          document.getElementById('result_2').innerText = res[2] ?? res.corpus_required_at_retirement ?? '-';
+        }
+
+        document.getElementById('resultsCard').style.display = 'block';
       } else {
-        alert("Error: " + (result.error || "Calculation failed"));
+        showCalcError(payload && payload.error ? payload.error : 'Calculation failed');
       }
     })
     .catch(err => {
-      console.error("API error:", err);
-      alert("Failed to calculate: " + err.message);
+      console.error('API error:', err);
+      showCalcError('Failed to calculate: ' + (err.message || err));
     });
+
+    return false;
+  });
+
+  // hide results and errors on reset
+  document.getElementById('calcForm').addEventListener('reset', function() {
+    document.getElementById('resultsCard').style.display = 'none';
+    clearCalcError();
   });
 </script>
 {% endblock %}

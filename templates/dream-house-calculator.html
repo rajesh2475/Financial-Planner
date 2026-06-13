@@ -6,98 +6,74 @@
   <div class="card shadow-sm mb-4">
     <div class="card-header fw-semibold">Dream House Calculator</div>
     <div class="card-body">
-      <p><strong>Source Excel File:</strong> DREAM HOUSE CALCULATOR.xlsx</p>
       <p>This calculator is automatically generated from the Excel workbook. Enter your inputs below to calculate results.</p>
       
-      <form id="calcForm" method="POST">
+      <form id="calcForm" method="POST" novalidate>
         <fieldset>
           <legend class="mb-3">Input Values</legend>
 
         <div class="form-group mb-3">
-          <label for="input_0" class="form-label">MONTHLY STEP-UP SIP AMOUNT DETERMINING FOR DOWN PAYMENT</label>
-          <input type="number" class="form-control" id="input_0" name="input_0" placeholder="Enter monthly step-up sip amount determining for down payment">
+          <label for="input_0" class="form-label">House Price (INR) <span class="text-danger">*</span></label>
+          <input type="number" class="form-control" id="input_0" name="input_0" placeholder="Total cost of the house (e.g. 5000000)" required aria-required="true">
+          <small class="text-muted">Total purchase price you expect to pay for the house.</small>
         </div>
+
         <div class="form-group mb-3">
-          <label for="input_1" class="form-label">MONTHLY STEP-UP SIP AMOUNT DETERMINING FOR DREAM HOUSE</label>
-          <input type="number" class="form-control" id="input_1" name="input_1" placeholder="Enter monthly step-up sip amount determining for dream house">
+          <label for="input_1" class="form-label">Down Payment (%) <span class="text-danger">*</span></label>
+          <input type="number" class="form-control" id="input_1" name="input_1" placeholder="Down payment percentage (e.g. 20)" value="20" required aria-required="true">
+          <small class="text-muted">Percentage of house price you will pay upfront. Typical: 10–30%.</small>
         </div>
+
         <div class="form-group mb-3">
-          <label for="input_2" class="form-label">EXPECTED RETURN</label>
-          <input type="number" class="form-control" id="input_2" name="input_2" placeholder="Enter expected return">
+          <label for="input_note" class="form-label">Optional: Loan Details</label>
+          <small class="text-muted d-block">If you provide interest rate and tenure we will also show approximate EMI and loan needed.</small>
         </div>
-        <div class="form-group mb-3">
-          <label for="input_3" class="form-label">AGE</label>
-          <input type="number" class="form-control" id="input_3" name="input_3" placeholder="Enter age">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_4" class="form-label">MONTHLY INVESTMENT</label>
-          <input type="number" class="form-control" id="input_4" name="input_4" placeholder="Enter monthly investment">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_5" class="form-label">EMI CALCULATION</label>
-          <input type="number" class="form-control" id="input_5" name="input_5" placeholder="Enter emi calculation">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_6" class="form-label">DOWN PAYMENT AMOUNT</label>
-          <input type="number" class="form-control" id="input_6" name="input_6" placeholder="Enter down payment amount">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_7" class="form-label">LOAN AMOUNT</label>
-          <input type="number" class="form-control" id="input_7" name="input_7" placeholder="Enter loan amount">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_8" class="form-label">INTEREST RATE</label>
-          <input type="number" class="form-control" id="input_8" name="input_8" placeholder="Enter interest rate">
-        </div>
-        <div class="form-group mb-3">
-          <label for="input_9" class="form-label">TENURE OPTED</label>
-          <input type="number" class="form-control" id="input_9" name="input_9" placeholder="Enter tenure opted">
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="input_8" class="form-label">Interest Rate (annual %)</label>
+            <input type="number" class="form-control" id="input_8" name="input_8" placeholder="e.g., 7.5" step="0.01">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="input_9" class="form-label">Tenure (years)</label>
+            <input type="number" class="form-control" id="input_9" name="input_9" placeholder="e.g., 20">
+          </div>
         </div>
         </fieldset>
-        
-        <button type="submit" class="btn btn-primary">Calculate</button>
-        <button type="reset" class="btn btn-secondary">Clear</button>
-        <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary">Back to Home</a>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">Calculate</button>
+          <button type="reset" class="btn btn-secondary">Clear</button>
+          <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary">Back to Home</a>
+        </div>
       </form>
+
+      <!-- Inline error and results -->
+      <div id="dreamError" style="display:none;" class="alert alert-danger mt-3"></div>
+
+      <div id="resultsCard" class="card shadow-sm mt-4" style="display:none;">
+        <div class="card-header fw-semibold">Results</div>
+        <div class="card-body">
+          <table class="table table-bordered">
+            <tbody>
+            <tr>
+              <th>Downpayment (INR)</th>
+              <td id="result_downpayment">-</td>
+            </tr>
+            <tr>
+              <th>Loan Needed (INR)</th>
+              <td id="result_loan_needed">-</td>
+            </tr>
+            <tr>
+              <th>Approx EMI</th>
+              <td id="result_emi">-</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
-
-  {% if result %}
-  <div class="card shadow-sm">
-    <div class="card-header fw-semibold">Results</div>
-    <div class="card-body">
-      <table class="table table-bordered">
-        <tbody>
-
-        <tr>
-          <th>MONTHLY STEP-UP SIP AMOUNT DETERMINING FOR DOWN PAYMENT</th>
-          <td id="result_0">-</td>
-        </tr>
-        <tr>
-          <th>MONTHLY STEP-UP SIP AMOUNT DETERMINING FOR DREAM HOUSE</th>
-          <td id="result_1">-</td>
-        </tr>
-        <tr>
-          <th>EMI CALCULATION</th>
-          <td id="result_2">-</td>
-        </tr>
-        <tr>
-          <th>DOWN PAYMENT %</th>
-          <td id="result_3">-</td>
-        </tr>
-        <tr>
-          <th>DOWN PAYMENT AMOUNT</th>
-          <td id="result_4">-</td>
-        </tr>
-        <tr>
-          <th>APROXIMATE EMI</th>
-          <td id="result_5">-</td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  {% endif %}
 
   {% if error %}
   <div class="alert alert-danger">{{ error }}</div>
@@ -105,28 +81,54 @@
 </div>
 
 <script>
-  document.getElementById("calcForm").addEventListener("submit", function(e) {
+  function showDreamError(msg) {
+    const el = document.getElementById('dreamError');
+    el.style.display = 'block';
+    el.textContent = msg;
+    document.getElementById('resultsCard').style.display = 'none';
+  }
+  function clearDreamError() {
+    const el = document.getElementById('dreamError'); el.style.display='none'; el.textContent='';
+  }
+
+  document.getElementById('calcForm').addEventListener('submit', function(e){
     e.preventDefault();
-    const formData = new FormData(this);
-    const data = Object.fromEntries(formData);
+    clearDreamError();
+    const fd = new FormData(this);
+    const data = Object.fromEntries(fd.entries());
+    // Convert numeric values
+    Object.keys(data).forEach(k => { const n = parseFloat(data[k]); if (!isNaN(n)) data[k]=n; });
+
     fetch("{{ url_for('calculators.dream_house_calculator_api') }}", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(data)
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data)
     })
-    .then(res => res.json())
-    .then(result => {
-      if (result.success) {
-        console.log("Calculation result:", result);
-        alert("Calculation submitted. Check console for details.");
+    .then(r => r.json())
+    .then(resp => {
+      if (resp && resp.success) {
+        const res = resp.result || resp;
+        const fmt = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
+        if (res.downpayment !== undefined) document.getElementById('result_downpayment').innerText = fmt.format(res.downpayment);
+        if (res.loan_needed !== undefined) document.getElementById('result_loan_needed').innerText = fmt.format(res.loan_needed);
+
+        // approximate EMI if interest & tenure provided
+        const rate = parseFloat(data.input_8 || data.interest_rate || 0)/100/12;
+        const months = parseInt(data.input_9 || data.tenure_years || 0) * 12 || 0;
+        if (rate > 0 && months > 0 && res.loan_needed) {
+          const P = res.loan_needed;
+          const emi = (P * rate * Math.pow(1+rate, months)) / (Math.pow(1+rate, months)-1);
+          document.getElementById('result_emi').innerText = fmt.format(Math.round(emi*100)/100);
+        } else {
+          document.getElementById('result_emi').innerText = '-';
+        }
+
+        document.getElementById('resultsCard').style.display = 'block';
       } else {
-        alert("Error: " + (result.error || "Calculation failed"));
+        showDreamError((resp && resp.error) ? resp.error : 'Calculation failed');
       }
     })
-    .catch(err => {
-      console.error("API error:", err);
-      alert("Failed to calculate: " + err.message);
-    });
+    .catch(err => { console.error('API error', err); showDreamError('Failed to calculate: '+(err.message||err)); });
   });
+
+  document.getElementById('calcForm').addEventListener('reset', function(){ document.getElementById('resultsCard').style.display='none'; clearDreamError(); });
 </script>
 {% endblock %}
