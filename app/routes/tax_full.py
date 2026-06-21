@@ -53,7 +53,7 @@ def calculate_tax_slabs(taxable_income, regime, age):
     tax_with_cess = round(tax * 1.04, 2)
     return slabs, round(tax, 2), tax_with_cess
 
-@tax_full_bp.route("/tax/full", methods=["GET", "POST"])
+@tax_full_bp.route("/full", methods=["GET", "POST"])
 def full_tax_calculator():
     if request.method == "GET":
         form_data = {key: "" for key in [
@@ -83,3 +83,6 @@ def full_tax_calculator():
     }
 
     return render_template("tax_full.html", form=form_data, result=result)
+
+
+
