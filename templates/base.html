@@ -782,10 +782,30 @@
               if (resp && resp.success) {
                 const result = resp.result || resp;
                 // populate elements with id 'result_<key>'
-                Object.keys(result).forEach(k => {
+                const keys = Object.keys(result || {});
+                // Try to populate by explicit keys first
+                keys.forEach(k => {
                   const el = document.getElementById('result_' + k);
                   if (el) el.innerText = result[k];
                 });
+                // Fallback: if template uses numbered result_0..result_N slots, populate them in insertion order
+                // only if those elements are empty
+                const numberedEls = Array.from(document.querySelectorAll('[id^="result_"]'))
+                  .filter(e => /^result_\d+$/.test(e.id));
+                if (numberedEls.length > 0) {
+                  // If explicit keys didn't populate any numbered slots, map result values in order
+                  const anyFilled = numberedEls.some(e => e.textContent && e.textContent.trim() !== '-' && e.textContent.trim() !== '');
+                  if (!anyFilled) {
+                    const vals = keys.map(k => result[k]);
+                    // if result is not an object of keys, try array-like
+                    if (vals.length === 0 && Array.isArray(result)) {
+                      vals.push(...result);
+                    }
+                    numberedEls.forEach((el, idx) => {
+                      if (vals[idx] !== undefined) el.innerText = vals[idx];
+                    });
+                  }
+                }
                 // show a results card if present
                 const resultsCard = document.getElementById('resultsCard') || document.querySelector('.results-card');
                 if (resultsCard) resultsCard.style.display = 'block';

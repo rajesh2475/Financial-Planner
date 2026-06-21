@@ -25,8 +25,8 @@
                 <label for="salary" class="form-label">
                   <span class="text-danger">*</span> Primary Monthly Income (₹)
                 </label>
-                <input type="number" class="form-control" id="salary" name="input_0" 
-                       placeholder="e.g., 1,00,000" step="1000" oninput="clearError(this); calculateBudget()">
+                  <input type="number" class="form-control" id="salary" name="input_0" 
+                         placeholder="e.g., 1,00,000" step="1000" oninput="clearError(this); calculateBudget()" required aria-required="true">
               </div>
             </div>
             <div class="col-md-6">
@@ -138,35 +138,11 @@
   </div>
 
   <!-- Results Section -->
-  {% if result %}
-  <div class="card shadow-sm mt-4">
-    <div class="card-header fw-semibold bg-success text-white">
-      <i class="fas fa-check-circle"></i> Budget Analysis
-    </div>
-    <div class="card-body">
-      <table class="table table-bordered">
-        <tr>
-          <th>Total Monthly Income</th>
-          <td>₹ {{ "{:,.0f}".format(result.get('total_income', 0)) }}</td>
-        </tr>
-        <tr>
-          <th>Total Monthly Obligations</th>
-          <td class="text-danger">₹ {{ "{:,.0f}".format(result.get('total_emis', 0)) }}</td>
-        </tr>
-        <tr>
-          <th>Other Expenses</th>
-          <td>₹ {{ "{:,.0f}".format(result.get('other_expenses', 0)) }}</td>
-        </tr>
-        <tr class="table-success fw-bold">
-          <th>Available for Savings/Discretionary</th>
-          <td>₹ {{ "{:,.0f}".format(result.get('available', 0)) }}</td>
-        </tr>
-      </table>
-    </div>
-  </div>
-  {% endif %}
+    <!-- Server-side render removed; client-side API will populate results in #resultsCard -->
 
   <!-- Generic API results (populated by base.js) -->
+  <div id="budgetError" style="display:none;" class="alert alert-danger mt-3"></div>
+
   <div id="resultsCard" class="card shadow-sm mt-4" style="display:none;">
     <div class="card-header fw-semibold bg-primary text-white">API Results</div>
     <div class="card-body">
@@ -230,17 +206,82 @@ function resetBudget() {
   document.getElementById('totalEmis').textContent = '₹ 0';
   document.getElementById('netBalance').textContent = '₹ 0';
   document.getElementById('emiRatio').textContent = '0%';
+  // hide results and errors
+  const results = document.getElementById('resultsCard');
+  const err = document.getElementById('budgetError');
+  if (results) results.style.display = 'none';
+  if (err) { err.style.display = 'none'; err.textContent = ''; }
 }
 
 function validateBudgetForm(event) {
-  const salary = document.getElementById('salary');
-  if (!salary.value || parseFloat(salary.value) <= 0) {
-    setError(salary, 'Please enter primary monthly income');
-    event.preventDefault();
+  event.preventDefault();
+  const salaryEl = document.getElementById('salary');
+  const budgetError = document.getElementById('budgetError');
+  const resultsCard = document.getElementById('resultsCard');
+  budgetError.style.display = 'none'; budgetError.textContent = '';
+
+  if (!salaryEl.value || parseFloat(salaryEl.value) <= 0) {
+    setError(salaryEl, 'Please enter primary monthly income');
+    salaryEl.focus();
     return false;
   }
-  clearError(salary);
-  return true;
+  clearError(salaryEl);
+
+  // compute totals (same logic as calculateBudget)
+  const salary = parseFloat(document.getElementById('salary').value) || 0;
+  const spouse = parseFloat(document.getElementById('spouse_income').value) || 0;
+  const additional = parseFloat(document.getElementById('additional_income').value) || 0;
+  const rental = parseFloat(document.getElementById('rental_income').value) || 0;
+  const homeEmi = parseFloat(document.getElementById('home_emi').value) || 0;
+  const carEmi = parseFloat(document.getElementById('car_emi').value) || 0;
+  const personalEmi = parseFloat(document.getElementById('personal_emi').value) || 0;
+  const otherEmi = parseFloat(document.getElementById('other_emi').value) || 0;
+  const medical = parseFloat(document.getElementById('medical').value) || 0;
+
+  const totalIncome = salary + spouse + additional + rental;
+  const totalEmis = homeEmi + carEmi + personalEmi + otherEmi;
+  const totalExpenses = totalEmis + medical;
+
+  const payload = {
+    income: totalIncome,
+    expense_home_emi: homeEmi,
+    expense_car_emi: carEmi,
+    expense_personal_emi: personalEmi,
+    expense_other_emi: otherEmi,
+    expense_medical: medical
+  };
+
+  const apiUrl = "{{ url_for('calculators.monthly_budget_planning_api') }}";
+
+  fetch(apiUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(resp => resp.json())
+  .then(data => {
+    if (!data || data.success === false) {
+      budgetError.style.display = 'block';
+      budgetError.textContent = (data && data.error) ? data.error : 'Calculation failed. Please try again.';
+      if (resultsCard) resultsCard.style.display = 'none';
+      return;
+    }
+    const res = data.result || {};
+    const totalExp = res.total_expenses != null ? res.total_expenses : totalExpenses;
+    const savings = res.savings != null ? res.savings : (totalIncome - totalExp);
+
+    document.getElementById('result_total_expenses').textContent = '₹ ' + Math.round(totalExp).toLocaleString('en-IN');
+    document.getElementById('result_savings').textContent = '₹ ' + Math.round(savings).toLocaleString('en-IN');
+
+    if (resultsCard) resultsCard.style.display = 'block';
+  })
+  .catch(err => {
+    budgetError.style.display = 'block';
+    budgetError.textContent = 'Network error. Please try again.';
+    if (resultsCard) resultsCard.style.display = 'none';
+  });
+
+  return false;
 }
 
 document.addEventListener('DOMContentLoaded', calculateBudget);

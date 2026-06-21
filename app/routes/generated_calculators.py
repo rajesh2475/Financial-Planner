@@ -304,7 +304,9 @@ def cng_vs_ev_vs_petrol_api():
         cheapest = None
         if any([cng, ev, petrol]):
             cheapest = min(costs, key=costs.get)
-        return jsonify({"success": True, "file": "CNG VS EV VS PETROL.xlsx", "result": {"costs": costs, "cheapest": cheapest}, "input_data": data})
+        # include flat keys for template convenience
+        result = {"costs": costs, "cheapest": cheapest, "cng": cng, "ev": ev, "petrol": petrol}
+        return jsonify({"success": True, "file": "CNG VS EV VS PETROL.xlsx", "result": result, "input_data": data})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 400
 
@@ -1169,9 +1171,19 @@ def kids_investment_calculator_api():
     """API endpoint for Kids Investment Calculator.xlsx."""
     data = request.get_json() or {}
     try:
-        monthly = safe_float(data.get("monthly") or data.get("input_0") or 0)
-        years = safe_int(data.get("years") or data.get("input_1") or 10)
-        annual_return = safe_float(data.get("annual_return") or data.get("input_2") or 8) / 100
+        # Template maps monthly investment to input_1; support multiple field names for robustness
+        monthly = safe_float(data.get("monthly") or data.get("input_1") or data.get("input_5") or data.get("input_0") or 0)
+        # Determine years: prefer explicit 'years', otherwise compute from goal age (input_6) minus current child age (input_0)
+        if data.get('years'):
+            years = safe_int(data.get('years'))
+        else:
+            try:
+                start_age = safe_int(data.get('input_0') or 0)
+                goal_age = safe_int(data.get('input_6') or data.get('input_4') or 0)
+                years = max(0, goal_age - start_age) if goal_age and start_age else safe_int(data.get('input_6') or 10)
+            except Exception:
+                years = safe_int(data.get('input_6') or 10)
+        annual_return = safe_float(data.get("annual_return") or data.get("input_7") or data.get("input_2") or 8) / 100
         n = years * 12
         r = annual_return / 12
         fv = monthly * (((1 + r) ** n - 1) / r) * (1 + r) if r > 0 and n > 0 else monthly * n
@@ -1278,8 +1290,16 @@ def networth_api():
     """API endpoint for NETWORTH.xlsx."""
     data = request.get_json() or {}
     try:
-        assets = sum([safe_float(v) for k, v in data.items() if k.startswith("asset_")])
-        liabilities = sum([safe_float(v) for k, v in data.items() if k.startswith("liability_")])
+        # Accept both explicit asset_/liability_ keys and legacy input_N keys.
+        asset_vals = [safe_float(v) for k, v in data.items() if k.startswith("asset_")]
+        liability_vals = [safe_float(v) for k, v in data.items() if k.startswith("liability_")]
+        if not asset_vals:
+            # fallback: sum numeric input_* values as assets (legacy templates)
+            asset_vals = [safe_float(v) for k, v in data.items() if k.startswith('input_') and str(v).strip() != ""]
+        if not liability_vals:
+            liability_vals = []
+        assets = sum(asset_vals)
+        liabilities = sum(liability_vals)
         net = round(assets - liabilities, 2)
         return jsonify({"success": True, "file": "NETWORTH.xlsx", "result": {"assets": round(assets,2), "liabilities": round(liabilities,2), "networth": net}, "input_data": data})
     except Exception as e:

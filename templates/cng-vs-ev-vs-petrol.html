@@ -8,43 +8,44 @@
     <div class="card-body">
       <p>This calculator is automatically generated from the Excel workbook. Enter your inputs below to calculate results.</p>
       
-      <form id="calcForm" method="POST">
+      <form id="calcForm" method="POST" novalidate>
         <fieldset>
-          <legend class="mb-3">Input Values</legend>
+          <legend class="mb-3">Per-km Running Cost (required)</legend>
 
         <div class="form-group mb-3">
-          <label for="input_0" class="form-label">APPROXIMATE INSURANCE PREMIUM</label>
-          <input type="number" class="form-control" id="input_0" name="input_0" placeholder="Enter approximate insurance premium">
+          <label for="cng_per_km" class="form-label">CNG Cost per km (₹)</label>
+          <input type="number" class="form-control" id="cng_per_km" name="cng_per_km" placeholder="e.g., 2.5" step="0.1" required aria-required="true">
         </div>
         <div class="form-group mb-3">
-          <label for="input_1" class="form-label">BATTERY COST & WARANTY PERIOD</label>
-          <input type="number" class="form-control" id="input_1" name="input_1" placeholder="Enter battery cost & waranty period">
+          <label for="ev_per_km" class="form-label">EV Cost per km (₹)</label>
+          <input type="number" class="form-control" id="ev_per_km" name="ev_per_km" placeholder="e.g., 1.0" step="0.1" required aria-required="true">
+        </div>
+        <div class="form-group mb-3">
+          <label for="petrol_per_km" class="form-label">Petrol Cost per km (₹)</label>
+          <input type="number" class="form-control" id="petrol_per_km" name="petrol_per_km" placeholder="e.g., 4.0" step="0.1" required aria-required="true">
         </div>
         </fieldset>
-        
-        <button type="submit" class="btn btn-primary">Calculate</button>
+
+        <button type="submit" class="btn btn-primary">Compare</button>
         <button type="reset" class="btn btn-secondary">Clear</button>
         <a href="{{ url_for('default_page') }}" class="btn btn-outline-secondary">Back to Home</a>
       </form>
     </div>
   </div>
 
-  {% if result %}
-  <div class="card shadow-sm">
-    <div class="card-header fw-semibold">Results</div>
+  <div id="resultsCard" class="card shadow-sm mt-4" style="display:none;">
+    <div class="card-header fw-semibold">Comparison Results</div>
     <div class="card-body">
       <table class="table table-bordered">
         <tbody>
-
-        <tr>
-          <th>APPROXIMATE INSURANCE PREMIUM</th>
-          <td id="result_0">-</td>
-        </tr>
+        <tr><th>CNG (₹/km)</th><td id="result_cng">-</td></tr>
+        <tr><th>EV (₹/km)</th><td id="result_ev">-</td></tr>
+        <tr><th>Petrol (₹/km)</th><td id="result_petrol">-</td></tr>
+        <tr><th>Cheapest Option</th><td id="result_cheapest">-</td></tr>
         </tbody>
       </table>
     </div>
   </div>
-  {% endif %}
 
   {% if error %}
   <div class="alert alert-danger">{{ error }}</div>
